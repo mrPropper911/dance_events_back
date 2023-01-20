@@ -1,0 +1,6 @@
+#Here you need to select a profile for building app:
+# - test (local build)
+# - docker (build for docker image)
+spring:
+  profiles:
+    active: test

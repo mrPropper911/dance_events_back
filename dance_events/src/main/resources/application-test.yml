@@ -12,8 +12,13 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
+      use-new-id-generator-mappings: false
+      naming:
+        #for camelCase naming
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     open-in-view: false
     show-sql: true
+
   flyway:
     baseline-on-migrate: true
 

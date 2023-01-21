@@ -3,6 +3,7 @@ package by.belyahovich.dance_events.domain;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -17,7 +18,7 @@ import java.util.Set;
 public class Event {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     @Column(name = "title")
@@ -35,11 +36,11 @@ public class Event {
     @Column(name = "active")
     private boolean active;
 
-    @ManyToMany(mappedBy = "likedEvents")
+    @ManyToMany(mappedBy = "likedEvents", fetch = FetchType.LAZY)
     private Set<User> likedByUser;
 
-    @ManyToOne
-    @JoinColumn(name = "event_id")
+    @ManyToOne()
+    @JoinColumn(name = "eventsByType",referencedColumnName = "id")
     private EventType eventType;
 
     @Override

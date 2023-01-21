@@ -31,7 +31,7 @@ public class UserInfo {
 
     //@MapsId id is not automatically used, but injected by the user's id
     //@JoinColumn rename foreign key
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @MapsId
     @JoinColumn(name = "id")
     private User user;

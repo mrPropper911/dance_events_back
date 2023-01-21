@@ -9,15 +9,15 @@ import javax.validation.constraints.Size;
 import java.util.Objects;
 import java.util.Set;
 
-@Getter
 @Setter
+@Getter
 @RequiredArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     //need add  unique = true
@@ -31,7 +31,7 @@ public class User {
     @Column(name = "active")
     private boolean active;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "role_id")
     private Role role;
 

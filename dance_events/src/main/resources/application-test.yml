@@ -12,22 +12,23 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
+      #for close error 'dancer.hibernate_sequence' doesn't exist
       use-new-id-generator-mappings: false
+      #for camelCase naming
       naming:
-        #for camelCase naming
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    open-in-view: false
+#    open-in-view: false
     show-sql: true
-
   flyway:
     baseline-on-migrate: true
-
+    enabled: true
   #For run data.sql uncomment (add test data)
   sql:
     init:
       mode: always
+      continue-on-error: false
 
 logging:
   level:
     root: info
-    sql: trace
+    sql: info

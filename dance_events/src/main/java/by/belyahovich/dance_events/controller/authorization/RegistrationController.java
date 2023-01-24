@@ -24,25 +24,25 @@ public class RegistrationController {
         this.roleService = roleService;
     }
 
-//    /**
-//     * @param request {@link ProfileRequest}
-//     *                To create a new user, the following parameters are required:
-//     *                - login (new uniq login for user)
-//     *                - password (new password > 5 elements)
-//     *                - roleTitle (choose role of user)
-//     * @return {@link HttpStatus}
-//     */
-//    @PostMapping("/signup")
-//    public ResponseEntity<User> signUp(@RequestBody @Valid ProfileRequest request) {
-//        User userForAddToDatabase = new User();
-//        userForAddToDatabase.setLogin(request.login());
-//        userForAddToDatabase.setPassword(request.password());
-//        userForAddToDatabase.setActive(true);
-//        //Create Role entity from Database and add to new User
-//        Optional<Role> roleByTitle = roleService.findRoleByTitle(request.roleTitle());
-//        userForAddToDatabase.setRole(roleByTitle.orElseThrow());
-//        userService.createUser(userForAddToDatabase);
-//        return new ResponseEntity<>(HttpStatus.CREATED);
-//    }
+    /**
+     * @param request {@link ProfileRequest}
+     *                To create a new user, the following parameters are required:
+     *                - login (new uniq login for user)
+     *                - password (new password > 5 elements)
+     *                - roleTitle (choose role of user)
+     * @return {@link HttpStatus}
+     */
+    @PostMapping("/signup")
+    public ResponseEntity<User> signUp(@RequestBody @Valid ProfileRequest request) {
+        User userForAddToDatabase = new User();
+        userForAddToDatabase.setLogin(request.login());
+        userForAddToDatabase.setPassword(request.password());
+        userForAddToDatabase.setActive(true);
+        //Create Role entity from Database and add to new User
+        Optional<Role> roleByTitle = roleService.findRoleByTitle(request.roleTitle());
+        userForAddToDatabase.setRole(roleByTitle.orElseThrow());
+        userService.createUser(userForAddToDatabase);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 
 }

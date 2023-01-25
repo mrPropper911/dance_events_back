@@ -30,7 +30,6 @@ services:
       - "3307:3306"
     restart: always
     environment:
-      - MYSQL_USER=root
       - MYSQL_PASSWORD=root
       - MYSQL_DATABASE=dancer
       - MYSQL_ROOT_PASSWORD=root

@@ -1,12 +1,13 @@
-
 package by.belyahovich.dance_events.controller.authorization;
 
 import by.belyahovich.dance_events.domain.Role;
 import by.belyahovich.dance_events.domain.User;
-import by.belyahovich.dance_events.repository.role.RoleRepository;
 import by.belyahovich.dance_events.service.role.RoleService;
-import org.junit.jupiter.api.BeforeEach;
+import by.belyahovich.dance_events.service.user.UserService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,10 +15,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.http.HttpStatus;
-import static org.junit.jupiter.api.Assertions.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("Registration controller unit-test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RegistrationControllerTest {
@@ -26,7 +28,7 @@ class RegistrationControllerTest {
     private static final String SOME_PASSWORD = "SOME_PASSWORD";
     private static final String SOME_ROLE_TITLE = "SOME_ROLE_TITLE";
 
-    private Role role;
+    protected User actualUser = new User();
 
     @Autowired
     private TestRestTemplate testRestTemplate;
@@ -35,34 +37,46 @@ class RegistrationControllerTest {
     private RoleService roleService;
 
     @Autowired
-    private RoleRepository roleRepository;
+    private UserService userService;
 
-    @BeforeEach
-    public void init(){
+    @BeforeAll
+    public void init() {
         User user = new User();
         user.setLogin(SOME_LOGIN);
         user.setPassword(SOME_PASSWORD);
-
-        role = new Role();
+        //create new Role add to new User
+        Role role = new Role();
         role.setRoleTitle(SOME_ROLE_TITLE);
         Role actualRole = roleService.createRole(role);
+        user.setRole(actualRole);
+        //save new User to database
+        actualUser = userService.createUser(user);
     }
 
     @Test
-    void signUp_whenCreateUser_thenStatus201() {
+    void signUp_withCreateNotExistingUser_shouldProperlyReturnStatus201() {
         //given
-//        User user = new User();
-//        user.setLogin("SOME_LOGIN_RANDOM");
-//        user.setPassword("SOME_PASSWORD_RANDOM");
-//        user.setRole(role);
-        ProfileRequest profileRequest = new ProfileRequest("SOME_LOGIN_RANDOM",
-                "SOME_PASSWORD_RANDOM", SOME_ROLE_TITLE);
+        String SOME_LOGIN_RANDOM = "SOME_LOGIN_RANDOM";
+        String SOME_PASSWORD_RANDOM = "SOME_PASSWORD_RANDOM";
 
-        ProfileRequest profileRequest1 = testRestTemplate.postForObject("/signup", profileRequest, ProfileRequest.class);
+        ProfileRequest profileRequest =
+                new ProfileRequest(SOME_LOGIN_RANDOM, SOME_PASSWORD_RANDOM, SOME_ROLE_TITLE);
         //when
-//        ResponseEntity<User> actualResponse = testRestTemplate.postForEntity("/signup", user, User.class);
+        ResponseEntity<ProfileRequest> profileRequestResponseEntity =
+                testRestTemplate.postForEntity("/signup", profileRequest, ProfileRequest.class);
         //then
-//        assertThat(actualResponse).isEqualTo(HttpStatus.CREATED);
+        assertThat(profileRequestResponseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
 
+    @Test
+    void signUp_withCreateExistingUser_shouldProperlyReturnStatus400() {
+        //given
+        ProfileRequest profileRequest =
+                new ProfileRequest(SOME_LOGIN, SOME_PASSWORD, SOME_ROLE_TITLE);
+        //then
+        ResponseEntity<ProfileRequest> profileRequestResponseEntity =
+                testRestTemplate.postForEntity("/signup", profileRequest, ProfileRequest.class);
+
+        assertThat(profileRequestResponseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }

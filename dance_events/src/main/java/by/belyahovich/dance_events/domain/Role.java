@@ -22,7 +22,7 @@ public class Role {
     @Column(name = "roleTitle")
     private String roleTitle;
 
-    @OneToMany(targetEntity = User.class, mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
     private Set<User> usersOfRole;
 
     @Override

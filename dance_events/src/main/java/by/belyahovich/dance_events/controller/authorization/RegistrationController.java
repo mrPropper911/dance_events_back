@@ -30,7 +30,7 @@ public class RegistrationController {
      *                - login (new uniq login for user)
      *                - password (new password > 5 elements)
      *                - roleTitle (choose role of user)
-     * @return {@link HttpStatus}
+     * @return {@link HttpStatus} 201 - created,400 - error, not created
      */
     @PostMapping("/signup")
     public ResponseEntity<User> signUp(@RequestBody @Valid ProfileRequest request) {
@@ -38,11 +38,16 @@ public class RegistrationController {
         userForAddToDatabase.setLogin(request.login());
         userForAddToDatabase.setPassword(request.password());
         userForAddToDatabase.setActive(true);
-        //Create Role entity from Database and add to new User
+        //Create Role entity from Database and add this Role to new User
         Optional<Role> roleByTitle = roleService.findRoleByTitle(request.roleTitle());
         userForAddToDatabase.setRole(roleByTitle.orElseThrow());
-        userService.createUser(userForAddToDatabase);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        //Try to save user in database
+        try {
+            userService.createUser(userForAddToDatabase);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
 }

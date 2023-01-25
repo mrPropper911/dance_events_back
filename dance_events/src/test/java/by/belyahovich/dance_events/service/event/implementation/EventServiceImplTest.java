@@ -11,6 +11,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -102,4 +105,16 @@ class EventServiceImplTest {
         assertThrows(ResourceNotFoundException.class,
                 () -> eventService.createEvent(event_1));
     }
+
+    @Test
+    void findAllEvents_withExistingEvent_shouldProperlyFindAllEvents() {
+        //when
+        List<Event> expectedEventList = new ArrayList<>(Arrays.asList(event_1, event_2));
+        when(eventRepository.findAll()).thenReturn(expectedEventList);
+        //then
+        List<Event> actualAllEvents = eventService.findAllEvents();
+        assertThat(actualAllEvents).hasSize(expectedEventList.size());
+        assertThat(actualAllEvents.get(0).getTitle()).isEqualTo(NAME_OF_EVENT_1);
+    }
+
 }

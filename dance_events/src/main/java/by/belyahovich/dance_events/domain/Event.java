@@ -38,9 +38,18 @@ public class Event {
     @ManyToMany(mappedBy = "likedEvents", fetch = FetchType.LAZY)
     private Set<User> likedByUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "eventsByType", referencedColumnName = "id")
     private EventType eventType;
+
+    public Event(String title, Date startDate, Date endDate, String description, boolean active, EventType eventType) {
+        this.title = title;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.description = description;
+        this.active = active;
+        this.eventType = eventType;
+    }
 
     @Override
     public boolean equals(Object o) {

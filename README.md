@@ -1,5 +1,5 @@
-# Dance events (backend)
-Backend for android app (dance events) written on Java 16 with Spring Framework, using MySQL database and Docker for running application.
+# Dance events (Spring backend for android application)
+Backend for android app (dance events) written on Java 16 with Spring Framework, using MySQL database and Docker for container running.
 
 ### How to build application for docker container
     - run command in console -> ./start.sh (build/rebuild and start container)

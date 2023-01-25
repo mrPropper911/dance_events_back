@@ -12,9 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,7 +58,7 @@ class RegistrationControllerTest {
     }
 
     @Test
-    void signUp_withCreateNotExistingUser_shouldProperlyReturnStatus201() {
+    public void signUpPOST_withCreateNotExistingUser_shouldProperlyReturnStatus201() {
         //given
         String SOME_LOGIN_RANDOM = "SOME_LOGIN_RANDOM";
         String SOME_PASSWORD_RANDOM = "SOME_PASSWORD_RANDOM";
@@ -69,7 +73,7 @@ class RegistrationControllerTest {
     }
 
     @Test
-    void signUp_withCreateExistingUser_shouldProperlyReturnStatus400() {
+    public void signUpPOST_withCreateExistingUser_shouldProperlyReturnStatus400() {
         //given
         ProfileRequest profileRequest =
                 new ProfileRequest(SOME_LOGIN, SOME_PASSWORD, SOME_ROLE_TITLE);
@@ -78,5 +82,18 @@ class RegistrationControllerTest {
                 testRestTemplate.postForEntity("/signup", profileRequest, ProfileRequest.class);
 
         assertThat(profileRequestResponseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void signUpGET_withExistingRole_shouldProperlyFindAllRoleAndReturnSetOfRoleAndStatus200() {
+        //given
+        ResponseEntity<List<Role>> response =
+                testRestTemplate.exchange("/signup", HttpMethod.GET, null,
+                        new ParameterizedTypeReference<>() {
+                        });
+        //then
+        List<Role> actualRole = response.getBody();
+        assertThat(actualRole).hasSize(1);
+        assertThat(actualRole.get(0).getRoleTitle()).isEqualTo(SOME_ROLE_TITLE);
     }
 }

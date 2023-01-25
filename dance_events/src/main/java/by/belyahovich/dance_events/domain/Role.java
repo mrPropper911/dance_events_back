@@ -25,6 +25,11 @@ public class Role {
     @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
     private Set<User> usersOfRole;
 
+    public Role(long id, String roleTitle) {
+        this.id = id;
+        this.roleTitle = roleTitle;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

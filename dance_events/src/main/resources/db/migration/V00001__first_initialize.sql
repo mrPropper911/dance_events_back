@@ -1,63 +1,64 @@
--- ensure that the table is removed before creating a new one.
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS users_info;
-DROP TABLE IF EXISTS events;
-DROP TABLE IF EXISTS events_type;
-DROP TABLE IF EXISTS events_like;
-DROP TABLE IF EXISTS roles;
-
-CREATE TABLE users
+create table events
 (
-    id   BIGINT AUTO_INCREMENT NOT NULL ,
-    login VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    active BIT,
-    role_id BIGINT REFERENCES roles(id),
-    PRIMARY KEY (id)
+    id bigint not null auto_increment,
+    active bit,
+    description varchar(255),
+    endDate datetime,
+    startDate datetime,
+    title varchar(255),
+    eventsByType bigint,
+    primary key (id)
 );
 
-CREATE TABLE users_info
+create table events_like
 (
-    id BIGINT NOT NULL,
-    name VARCHAR(255),
-    surname VARCHAR(255),
-    phone VARCHAR(255),
-    email VARCHAR(255),
-    FOREIGN KEY (id) REFERENCES users(id),
-    PRIMARY KEY (id)
+    user_id bigint not null,
+    event_id bigint not null,
+    primary key (user_id, event_id)
 );
 
-CREATE TABLE events
+create table events_type
 (
-    id BIGINT AUTO_INCREMENT NOT NULL,
-    title VARCHAR(255),
-    startDate DATETIME,
-    endDate DATETIME,
-    description VARCHAR(255),
-    active BIT,
-    eventsByType BIGINT REFERENCES events_type(id),
-    PRIMARY KEY (id)
+    id bigint not null auto_increment,
+    type varchar(255), primary key (id)
 );
 
-CREATE TABLE events_type
+create table roles
 (
-    id BIGINT AUTO_INCREMENT NOT NULL,
-    type VARCHAR(255),
-    PRIMARY KEY (id)
+    id bigint not null auto_increment,
+    roleTitle varchar(255),
+    primary key (id)
 );
 
-CREATE TABLE events_like
+create table users
 (
-    user_id BIGINT NOT NULL,
-    event_id BIGINT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (event_id) REFERENCES events(id),
-    UNIQUE (user_id, event_id)
+    id bigint not null auto_increment,
+    active bit,
+    login varchar(255) not null,
+    password varchar(255) not null,
+    role_id bigint, primary key (id)
 );
 
-CREATE TABLE roles
+create table users_info
 (
-    id BIGINT AUTO_INCREMENT NOT NULL,
-    roleTitle VARCHAR(255),
-    PRIMARY KEY (id)
+    id bigint not null,
+    email varchar(255),
+    name varchar(255),
+    phone varchar(255),
+    surname varchar(255),
+    primary key (id)
 );
+
+alter table events
+    add foreign key (eventsByType) references events_type (id);
+
+alter table events_like
+    add foreign key (event_id) references events (id);
+alter table events_like
+    add foreign key (user_id) references users (id);
+
+alter table users
+    add foreign key (role_id) references roles (id);
+
+alter table users_info
+    add foreign key (id) references users (id);

@@ -25,11 +25,11 @@ class UserRepositoryTest {
     @Autowired
     private UserRepositoryJpa userRepositoryJpa;
 
-    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addUsers.sql"})
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
-    public void findAll_with3Entity_shouldProperlyFindAllUsers() {
+    public void findAll_with4Entity_shouldProperlyFindAllUsers() {
         //given
-        int EXPECTED_COUNT_OF_USERS_ON_DB = 3;
+        int EXPECTED_COUNT_OF_USERS_ON_DB = 4;
         //when
         Iterable<User> actualUsersFromDB = userRepository.findAll();
         //then
@@ -48,7 +48,7 @@ class UserRepositoryTest {
         assertThat(actualUserFromDb.orElseThrow()).isEqualTo(expectedUserInDb);
     }
 
-    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addUsers.sql"})
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
     public void findUserById_withExistingUser_shouldProperlyFindUser() {
         //given
@@ -60,7 +60,7 @@ class UserRepositoryTest {
         assertThat(actualUserFromDB).isPresent();
     }
 
-    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addUsers.sql"})
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
     public void findUserByLogin_withExistingUser_shouldProperlyFindUser() {
         //given
@@ -74,7 +74,7 @@ class UserRepositoryTest {
         assertThat(actualUserFromDB.get().hashCode()).isEqualTo(expectedUserToDB.hashCode());
     }
 
-    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addUsers.sql"})
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
     public void findUserByLogin_withNotExistingUser_shouldReturnException() {
         //given
@@ -85,12 +85,12 @@ class UserRepositoryTest {
         assertThat(actualUserFromDB).isNotPresent();
     }
 
-    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addUsers.sql"})
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
     public void deleteById_withExistingUser_shouldProperlyDeleteUserById() {
         //given
-        int ALL_COUNT_OFF_USERS_AFTER_DELETE_ONE = 3;
-        int ALL_COUNT_OFF_USERS_BEFORE_DELETE_ONE = 4;
+        int ALL_COUNT_OFF_USERS_AFTER_DELETE_ONE = 4;
+        int ALL_COUNT_OFF_USERS_BEFORE_DELETE_ONE = 5;
         User newUser = createNewUser();
         User expectedUserToDb = userRepository.save(newUser);
         Iterable<User> allUsersFromDBBeforeDelete = userRepository.findAll();
@@ -102,7 +102,7 @@ class UserRepositoryTest {
         assertThat(allUsersFromDB).hasSize(ALL_COUNT_OFF_USERS_AFTER_DELETE_ONE);
     }
 
-    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addUsers.sql"})
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
     public void update_withNewUserInformation_shouldProperlyUpdateUserInformation() {
         //given

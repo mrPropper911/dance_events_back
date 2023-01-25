@@ -2,6 +2,7 @@ package by.belyahovich.dance_events.service.role.implementation;
 
 import by.belyahovich.dance_events.domain.Role;
 import by.belyahovich.dance_events.repository.role.RoleRepository;
+import by.belyahovich.dance_events.repository.role.RoleRepositoryJpa;
 import by.belyahovich.dance_events.service.role.RoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,12 +20,14 @@ class RoleServiceImplTest {
 
     protected Role role = new Role();
     private RoleRepository roleRepository;
+    private RoleRepositoryJpa roleRepositoryJpa;
     private RoleService roleService;
 
     @BeforeEach
     public void init() {
         roleRepository = Mockito.mock(RoleRepository.class);
-        roleService = new RoleServiceImpl(roleRepository);
+        roleRepositoryJpa = Mockito.mock(RoleRepositoryJpa.class);
+        roleService = new RoleServiceImpl(roleRepository, roleRepositoryJpa);
 
         role.setId(1L);
         role.setRoleTitle("SOME_TITLE");
@@ -48,5 +51,15 @@ class RoleServiceImplTest {
         //then
         roleService.deleteRole(role);
         verify(roleRepository, times(1)).delete(role);
+    }
+
+    @Test
+    void findRoleByTitle_wihExistingRole_shouldProperlyFindRole() {
+        //when
+        when(roleRepositoryJpa.findByRoleTitle(anyString())).thenReturn(Optional.of(role));
+        //then
+        Optional<Role> actualRole = roleService.findRoleByTitle("SOME_TITLE");
+        assertThat(actualRole).isPresent();
+        assertThat(actualRole).isEqualTo(Optional.of(role));
     }
 }

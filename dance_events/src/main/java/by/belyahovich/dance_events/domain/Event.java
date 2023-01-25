@@ -3,7 +3,6 @@ package by.belyahovich.dance_events.domain;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -39,8 +38,8 @@ public class Event {
     @ManyToMany(mappedBy = "likedEvents", fetch = FetchType.LAZY)
     private Set<User> likedByUser;
 
-    @ManyToOne()
-    @JoinColumn(name = "eventsByType",referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "eventsByType", referencedColumnName = "id")
     private EventType eventType;
 
     @Override

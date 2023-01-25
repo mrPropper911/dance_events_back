@@ -1,10 +1,10 @@
-# Insert data for testing database only on test profile
-DELETE FROM roles WHERE roles.id>0;
+#Example comments;
 DELETE FROM events_like WHERE events_like.event_id>0;
 DELETE FROM events WHERE events.id>0;
 DELETE FROM events_type WHERE events_type.id>0;
 DELETE FROM users_info WHERE users_info.id>0;
 DELETE FROM users WHERE users.id>0;
+DELETE FROM roles WHERE roles.id>0;
 
 ALTER TABLE roles AUTO_INCREMENT=1;
 ALTER TABLE users AUTO_INCREMENT=1;

@@ -10,4 +10,4 @@ docker-compose down
 docker-compose up --build -d
 
 # For not closing console
-$SHELL
+#$SHELL

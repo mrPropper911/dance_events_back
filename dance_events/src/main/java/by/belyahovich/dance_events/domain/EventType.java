@@ -22,8 +22,12 @@ public class EventType {
     @Column(name = "type")
     private String type;
 
-    @OneToMany(targetEntity = Event.class, mappedBy = "eventType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(targetEntity = Event.class, mappedBy = "eventType", fetch = FetchType.LAZY)
     private Set<Event> eventsByType;
+
+    public EventType(String type) {
+        this.type = type;
+    }
 
     @Override
     public boolean equals(Object o) {

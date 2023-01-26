@@ -9,7 +9,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -19,6 +22,7 @@ import static org.mockito.Mockito.*;
 class RoleServiceImplTest {
 
     protected Role role = new Role();
+    protected Role role2 = new Role();
     private RoleRepository roleRepository;
     private RoleRepositoryJpa roleRepositoryJpa;
     private RoleService roleService;
@@ -31,6 +35,8 @@ class RoleServiceImplTest {
 
         role.setId(1L);
         role.setRoleTitle("SOME_TITLE");
+        role2.setId(2L);
+        role2.setRoleTitle("SOME_TITLE_2");
     }
 
     @Test
@@ -45,7 +51,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void deleteRole() {
+    void deleteRole_withExistingRole_shouldProperlyDeleteRole() {
         //when
         when(roleRepository.findById(anyLong())).thenReturn(Optional.of(role));
         //then
@@ -61,5 +67,15 @@ class RoleServiceImplTest {
         Optional<Role> actualRole = roleService.findRoleByTitle("SOME_TITLE");
         assertThat(actualRole).isPresent();
         assertThat(actualRole).isEqualTo(Optional.of(role));
+    }
+
+    @Test
+    void findAllRole_withExistingRole_shouldProperlyFindAllRole() {
+        //when
+        Set<Role> expectedSetRole = new HashSet<>(Arrays.asList(role, role2));
+        when(roleRepository.findAll()).thenReturn(expectedSetRole);
+        //then
+        Set<Role> actualAllRole = roleService.findAllRole();
+        assertThat(actualAllRole).hasSize(expectedSetRole.size());
     }
 }

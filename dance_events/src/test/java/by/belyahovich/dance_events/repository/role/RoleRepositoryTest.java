@@ -64,5 +64,15 @@ class RoleRepositoryTest {
         assertThat(actualRole).isPresent();
     }
 
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findAll_withExistingRole_shouldProperlyFindAllRole (){
+        //given
+        int EXPECTED_SIZE_OF_ROLE = 3;
+        Iterable<Role> actualRole = roleRepository.findAll();
+        //then
+        assertThat(actualRole).hasSize(EXPECTED_SIZE_OF_ROLE);
+    }
+
 
 }

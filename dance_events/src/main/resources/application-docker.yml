@@ -12,8 +12,15 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
-    open-in-view: false
+      use-new-id-generator-mappings: false
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#    open-in-view: false
     show-sql: false
   flyway:
     baseline-on-migrate: true
     enabled: true
+
+  sql:
+    init:
+      mode: always

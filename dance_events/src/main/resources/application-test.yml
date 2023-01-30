@@ -32,3 +32,6 @@ logging:
   level:
     root: info
     sql: info
+
+#tiken lifetime is = current data + token lifetime (min)
+tokenLifetime: 30

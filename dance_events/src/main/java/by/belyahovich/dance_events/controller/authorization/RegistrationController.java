@@ -7,12 +7,12 @@ import by.belyahovich.dance_events.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -21,6 +21,7 @@ public class RegistrationController {
 
     private final UserService userService;
     private final RoleService roleService;
+
 
     @Autowired
     public RegistrationController(UserService userService, RoleService roleService) {
@@ -71,6 +72,27 @@ public class RegistrationController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+    }
+
+//    @PostMapping(value = "/signin")
+//    public ResponseEntity<?> signIn(@RequestBody AccountCredentials accountCredentials){
+//        UsernamePasswordAuthenticationToken creds =
+//                new UsernamePasswordAuthenticationToken(
+//                    accountCredentials.login(), accountCredentials.password()
+//                );
+//        Authentication authentication = authenticationManager.authenticate(creds);
+//        String jwts = jwtTokenRepository.generateToken()
+//    }
+
+    @PostMapping("/signin")
+    public @ResponseBody by.belyahovich.dance_events.domain.User signIn() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        User user = (principal instanceof User) ? (User) principal : null;
+        return Objects.nonNull(user) ? this.userService.findUserByLogin(user.getUsername()).orElseThrow() : null;
     }
 
 

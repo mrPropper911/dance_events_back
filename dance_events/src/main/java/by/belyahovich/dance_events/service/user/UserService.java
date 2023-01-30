@@ -11,6 +11,8 @@ public interface UserService {
 
     Optional<User> findUserByLogin(String login);
 
+    Optional<User> findUserByLoginAndPassword(String login, String password);
+
     User createUser(User user);
 
     void deleteUser(User user);

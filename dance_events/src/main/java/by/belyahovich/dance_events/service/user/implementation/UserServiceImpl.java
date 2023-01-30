@@ -9,6 +9,9 @@ import by.belyahovich.dance_events.repository.user.UserRepository;
 import by.belyahovich.dance_events.repository.user.UserRepositoryJpa;
 import by.belyahovich.dance_events.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +20,7 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserRepositoryJpa userRepositoryJpa;
@@ -42,6 +45,18 @@ public class UserServiceImpl implements UserService {
         return Optional.ofNullable(userRepositoryJpa.findUserByLogin(login).orElseThrow(
                 () -> new ResourceNotFoundException("USER WITH LOGIN: " + login + " NOT EXISTS")
         ));
+    }
+
+    //todo test
+    @Override
+    public Optional<User> findUserByLoginAndPassword(String login, String password) {
+        Optional<User> userByLogin = userRepositoryJpa.findUserByLogin(login);
+        if (userByLogin.isPresent()){
+            if (bCryptPasswordEncoder.matches(password, userByLogin.get().getPassword())){
+                return userByLogin;
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -74,5 +89,15 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("THIS USER WITH LOGIN: " + user.getLogin() + " NOT EXISTS");
         }
         return userRepositoryJpa.getAllLikedUserEventsByUserLogin(user.getLogin());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        Optional<User> user = findUserByLogin(login);
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("THIS USER WITH LOGIN: " + login + " NOT EXISTS");
+        }
+        return new org.springframework.security.core.userdetails.User(user.get().getLogin(), user.get().getPassword(),
+                true, true, true, true, user.get().getAuthorities());
     }
 }

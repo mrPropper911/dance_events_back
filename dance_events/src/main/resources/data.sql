@@ -12,9 +12,9 @@ ALTER TABLE events_type AUTO_INCREMENT=1;
 ALTER TABLE events AUTO_INCREMENT=1;
 
 INSERT INTO roles(roleTitle)
-VALUES  ('Administrator'),
-        ('Organizer'),
-        ('Member');
+VALUES  ('ROLE_ADMINISTRATOR'),
+        ('ROLE_ORGANIZER'),
+        ('ROLE_MEMBER');
 
 INSERT INTO events_type(type)
 VALUES  ('Urban'),

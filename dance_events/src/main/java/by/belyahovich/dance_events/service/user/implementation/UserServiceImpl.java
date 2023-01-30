@@ -47,6 +47,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         ));
     }
 
+    //todo test
+    @Override
+    public Optional<User> findUserByLoginAndPassword(String login, String password) {
+        Optional<User> userByLogin = userRepositoryJpa.findUserByLogin(login);
+        if (userByLogin.isPresent()){
+            if (bCryptPasswordEncoder.matches(password, userByLogin.get().getPassword())){
+                return userByLogin;
+            }
+        }
+        return Optional.empty();
+    }
+
     @Override
     public User createUser(User user) {
         Optional<User> userToSave = userRepositoryJpa.findUserByLogin(user.getLogin());

@@ -69,7 +69,7 @@ public class RegistrationController {
      * @return {@link HttpStatus} and Set<Role>
      */
     @GetMapping("/signup")
-    public ResponseEntity<?> signUp() {
+    public ResponseEntity<?> getRoleForSignUp() {
         try {
             Set<Role> rolesFromDb = roleService.findAllRole();
             return new ResponseEntity<>(rolesFromDb, HttpStatus.OK);
@@ -82,7 +82,7 @@ public class RegistrationController {
      * User authentithication
      *
      * @param accountCredentials {@link AccountCredentials}
-     *                           To create a new user, the following parameters are required:
+     *                           To authentithication, the following parameters are required:
      *                           - login
      *                           - password
      * @return {@link HttpStatus} jwt token.

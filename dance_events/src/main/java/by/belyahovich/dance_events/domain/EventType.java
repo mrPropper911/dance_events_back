@@ -22,7 +22,7 @@ public class EventType {
     @Column(name = "type")
     private String type;
 
-    @OneToMany(targetEntity = Event.class, mappedBy = "eventType", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "eventType")
     private Set<Event> eventsByType;
 
     public EventType(String type) {

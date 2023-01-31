@@ -17,6 +17,8 @@ public interface UserService {
 
     void deleteUser(User user);
 
+    void updateUserActive (String login, boolean active);
+
     List<Event> getAllLikedUserEventsByUser (User user);
 
 }

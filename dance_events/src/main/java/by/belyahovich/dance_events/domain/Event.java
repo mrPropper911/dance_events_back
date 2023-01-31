@@ -35,11 +35,11 @@ public class Event {
     @Column(name = "active")
     private boolean active;
 
-    @ManyToMany(mappedBy = "likedEvents", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "likedEvents")
     private Set<User> likedByUser;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "eventsByType", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "eventsByType")
     private EventType eventType;
 
     public Event(String title, Date startDate, Date endDate, String description, boolean active, EventType eventType) {

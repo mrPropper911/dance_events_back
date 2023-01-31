@@ -5,7 +5,9 @@ import by.belyahovich.dance_events.domain.UserInfo;
 
 public interface UserInfoService {
 
-    UserInfo createUserInfo (User user, UserInfo userInfo);
+    UserInfo createUserInfo (UserInfo userInfo);
 
     void deleteUserInfo (User user, UserInfo userInfo);
+
+    UserInfo findUserInfoByUserLogin (String userLogin);
 }

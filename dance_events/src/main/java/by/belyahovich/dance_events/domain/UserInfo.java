@@ -31,10 +31,18 @@ public class UserInfo {
 
     //@MapsId id is not automatically used, but injected by the user's id
     //@JoinColumn rename foreign key
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL)
     @MapsId
     @JoinColumn(name = "id")
     private User user;
+
+    public UserInfo(long id, String name, String surname, String phone, String email) {
+        this.id = id;
+        this.name = name;
+        this.surname = surname;
+        this.phone = phone;
+        this.email = email;
+    }
 
     @Override
     public boolean equals(Object o) {

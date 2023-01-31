@@ -13,7 +13,6 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -46,24 +45,12 @@ class UserInfoServiceImplTest {
     }
 
     @Test
-    public void createUserInfo_withExistingUser_shouldProperlyCreateUserInformation() {
-        //when
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
-        when(userInfoRepository.save(userInfo_1)).thenReturn(userInfo_1);
-        //then
-        UserInfo actualUserInformation = userInfoService.createUserInfo(user_1, userInfo_1);
-        assertThat(actualUserInformation).isNotNull();
-        assertThat(actualUserInformation).isEqualTo(userInfo_1);
-        verify(userInfoRepository, times(1)).save(userInfo_1);
-    }
-
-    @Test
     public void createUserInfo_withNotExistingUser_shouldThrowException() {
         //when
         when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
         //then
         assertThrows(ResourceNotFoundException.class,
-                () -> userInfoService.createUserInfo(user_1, userInfo_1));
+                () -> userInfoService.createUserInfo(userInfo_1));
     }
 
     @Test

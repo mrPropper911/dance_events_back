@@ -22,7 +22,7 @@ public class Role {
     @Column(name = "roleTitle")
     private String roleTitle;
 
-    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "role")
     private Set<User> usersOfRole;
 
     public Role(long id, String roleTitle) {

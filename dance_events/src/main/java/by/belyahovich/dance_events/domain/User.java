@@ -1,6 +1,5 @@
 package by.belyahovich.dance_events.domain;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -34,7 +33,11 @@ public class User implements UserDetails {
     @Column(name = "active")
     private boolean active;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserInfo userInfo;
+
+    @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
 
@@ -44,6 +47,14 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "event_id"))
     private Set<Event> likedEvents;
+
+    public User(long id, String login, String password, boolean active, Role role) {
+        this.id = id;
+        this.login = login;
+        this.password = password;
+        this.active = active;
+        this.role = role;
+    }
 
     @Override
     public boolean equals(Object o) {

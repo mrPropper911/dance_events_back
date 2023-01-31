@@ -51,8 +51,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public Optional<User> findUserByLoginAndPassword(String login, String password) {
         Optional<User> userByLogin = userRepositoryJpa.findUserByLogin(login);
-        if (userByLogin.isPresent()){
-            if (bCryptPasswordEncoder.matches(password, userByLogin.get().getPassword())){
+        if (userByLogin.isPresent()) {
+            if (bCryptPasswordEncoder.matches(password, userByLogin.get().getPassword())) {
                 return userByLogin;
             }
         }
@@ -80,6 +80,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             throw new ResourceNotFoundException("THIS USER WITH LOGIN: " + user.getLogin() + " NOT EXISTS");
         }
         userRepository.deleteById(userToDelete.get().getId());
+    }
+
+    @Override
+    public void updateUserActive(String login, boolean active) {
+        userRepositoryJpa.findUserByLogin(login)
+                .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH LOGIN: " + login + " NOT EXISTS"));
+        userRepositoryJpa.updateUserActive(login, active);
     }
 
     @Override

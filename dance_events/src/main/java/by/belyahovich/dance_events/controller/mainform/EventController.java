@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 public class EventController {
-    //todo getAllEvents to not auth., and getAllLikedByUserEvents for auth
 
     private final EventService eventService;
 
@@ -30,4 +29,6 @@ public class EventController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
+
+
 }

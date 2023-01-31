@@ -158,4 +158,14 @@ class UserServiceImplTest {
         assertThat(actualUserLikedEvents).isEqualTo(EVENTS_LIKED_USER);
         verify(userRepositoryJpa, times(1)).getAllLikedUserEventsByUserLogin(user_1.getLogin());
     }
+
+    @Test
+    public void updateUserActive_withExistingUser_shouldProperlyUpdateActiveField() {
+        //given
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
+        //when
+        userService.updateUserActive(EXIST_USER_1_LOGIN, true);
+        //then
+        verify(userRepositoryJpa, times(1)).updateUserActive(EXIST_USER_1_LOGIN, true);
+    }
 }

@@ -52,8 +52,8 @@ class UserInfoRepositoryTest {
         newUserInfo.setUser(savedUserToDB);
         newUserInfo.setName(NAME_NEW_USER);
         //when
-        UserInfo expectedUserInfo = userInfoRepository.save(newUserInfo);
-        Optional<UserInfo> actualUserInfoFromDB = userInfoRepository.findById(expectedUserInfo.getUser().getId());
+        userInfoRepository.save(newUserInfo);
+        Optional<UserInfo> actualUserInfoFromDB = userInfoRepository.findById(savedUserToDB.getId());
         //then
         assertThat(actualUserInfoFromDB).isPresent();
         assertThat(actualUserInfoFromDB.get().getName()).isEqualTo(NAME_NEW_USER);

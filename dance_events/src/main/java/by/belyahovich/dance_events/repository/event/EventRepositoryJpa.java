@@ -14,4 +14,7 @@ public interface EventRepositoryJpa extends JpaRepository<Event, Long> {
 
     //Delete event by title
     void deleteEventByTitle(String title);
+
+    //Find all events sorted by StartDate
+    Iterable<Event> findAllByOrderByStartDateAsc();
 }

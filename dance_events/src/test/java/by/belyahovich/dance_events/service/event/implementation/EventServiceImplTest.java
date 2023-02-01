@@ -107,10 +107,10 @@ class EventServiceImplTest {
     }
 
     @Test
-    void findAllEvents_withExistingEvent_shouldProperlyFindAllEvents() {
+    void findAllByOrderByStartDateAsc_withExistingEvent_shouldProperlyFindAllEvents() {
         //when
         List<Event> expectedEventList = new ArrayList<>(Arrays.asList(event_1, event_2));
-        when(eventRepository.findAll()).thenReturn(expectedEventList);
+        when(eventRepositoryJpa.findAllByOrderByStartDateAsc()).thenReturn(expectedEventList);
         //then
         List<Event> actualAllEvents = eventService.findAllEvents();
         assertThat(actualAllEvents).hasSize(expectedEventList.size());

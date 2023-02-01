@@ -20,6 +20,12 @@ public class EventController {
         this.eventService = eventService;
     }
 
+    /**
+     * Getting a list of all events (sorted by date)
+     * All events for main form
+     *
+     * @return list of {@link Event} and {@link HttpStatus}
+     */
     @GetMapping("/")
     public ResponseEntity<?> getAllEvents(){
         try {
@@ -29,6 +35,4 @@ public class EventController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
-
-
 }

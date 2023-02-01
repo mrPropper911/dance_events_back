@@ -51,7 +51,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> findAllEvents() {
         List<Event> returnAllEvents = new ArrayList<>();
-        Iterable<Event> allEvents = eventRepository.findAll();
+        Iterable<Event> allEvents = eventRepositoryJpa.findAllByOrderByStartDateAsc();
         for (Event iter : allEvents) {
             returnAllEvents.add(new Event(iter.getTitle(), iter.getStartDate(), iter.getEndDate(),
                     iter.getDescription(), iter.isActive(), new EventType(iter.getEventType().getType())));

@@ -29,7 +29,7 @@ public class UserController {
      *              - String login (variable in URL)
      * @return UserInfo + {@link HttpStatus}
      */
-    @GetMapping("/user/{login}")
+    @GetMapping("/users/{login}")
     public ResponseEntity<?> getUserInfo(@PathVariable String login) {
         try {
             UserInfo userInfoByUserId = userInfoService.findUserInfoByUserLogin(login);
@@ -52,7 +52,7 @@ public class UserController {
      *                 - String email
      * @return {@link HttpStatus}
      */
-    @PostMapping("/user/{login}")
+    @PostMapping("/users/{login}")
     public ResponseEntity<?> updateUserInfo(@RequestBody UserInfo userInfo, @PathVariable String login) {
         try {
             UserInfo userInfoByUserId = userInfoService.findUserInfoByUserLogin(login);
@@ -67,7 +67,7 @@ public class UserController {
 
     /**
      * Deleting a user and his data using the active flag
-     * Example request in postman: localhost:8080/user/user123?active=1
+     * Example request in postman: localhost:8080/users/user123?active=1
      * Params: active 1
      * Body: raw(JSON) true/false
      *
@@ -78,7 +78,7 @@ public class UserController {
      *               - boolean active (false for delete)
      * @return {@link HttpStatus}
      */
-    @PatchMapping("/user/{login}")
+    @PatchMapping("/users/{login}")
     public ResponseEntity<?> updateUserActive(@RequestBody boolean active, @PathVariable String login) {
         try {
             userService.updateUserActive(login, active);

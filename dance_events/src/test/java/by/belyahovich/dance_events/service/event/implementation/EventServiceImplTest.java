@@ -3,9 +3,12 @@ package by.belyahovich.dance_events.service.event.implementation;
 import by.belyahovich.dance_events.config.ResourceNotFoundException;
 import by.belyahovich.dance_events.domain.Event;
 import by.belyahovich.dance_events.domain.EventType;
+import by.belyahovich.dance_events.dto.EventDTO;
+import by.belyahovich.dance_events.dto.EventDTOMapper;
 import by.belyahovich.dance_events.repository.event.EventRepository;
 import by.belyahovich.dance_events.repository.event.EventRepositoryJpa;
 import by.belyahovich.dance_events.service.event.EventService;
+import by.belyahovich.dance_events.service.eventtype.EventTypeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,12 +35,16 @@ class EventServiceImplTest {
     private EventRepository eventRepository;
     private EventRepositoryJpa eventRepositoryJpa;
     private EventService eventService;
+    private EventDTOMapper eventDTOMapper;
+    private EventTypeService eventTypeService;
 
     @BeforeEach
     public void init() {
         eventRepositoryJpa = Mockito.mock(EventRepositoryJpa.class);
         eventRepository = Mockito.mock(EventRepository.class);
-        eventService = new EventServiceImpl(eventRepository, eventRepositoryJpa);
+        eventDTOMapper = Mockito.mock(EventDTOMapper.class);
+        eventTypeService = Mockito.mock(EventTypeService.class);
+        eventService = new EventServiceImpl(eventRepository, eventDTOMapper, eventRepositoryJpa, eventTypeService);
         EventType eventType = new EventType();
         eventType.setId(1L);
         eventType.setType("SOME_TYPE");
@@ -112,9 +119,9 @@ class EventServiceImplTest {
         List<Event> expectedEventList = new ArrayList<>(Arrays.asList(event_1, event_2));
         when(eventRepositoryJpa.findAllByOrderByStartDateAsc()).thenReturn(expectedEventList);
         //then
-        List<Event> actualAllEvents = eventService.findAllEvents();
+        List<EventDTO> actualAllEvents = eventService.findAllEvents();
         assertThat(actualAllEvents).hasSize(expectedEventList.size());
-        assertThat(actualAllEvents.get(0).getTitle()).isEqualTo(NAME_OF_EVENT_1);
+        assertThat(actualAllEvents.get(0).title()).isEqualTo(NAME_OF_EVENT_1);
     }
 
 }

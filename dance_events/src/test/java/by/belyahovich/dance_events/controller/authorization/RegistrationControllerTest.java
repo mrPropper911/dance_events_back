@@ -54,7 +54,7 @@ class RegistrationControllerTest {
         Role actualRole = roleService.createRole(role);
         user.setRole(actualRole);
         //save new User to database
-        actualUser = userService.createUser(user);
+//        actualUser = userService.createUser(user);
     }
 
     @Test

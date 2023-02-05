@@ -43,42 +43,4 @@ public class UserInfo {
         this.phone = phone;
         this.email = email;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        UserInfo userInfo = (UserInfo) o;
-
-        if (id != userInfo.id) return false;
-        if (!Objects.equals(name, userInfo.name)) return false;
-        if (!Objects.equals(surname, userInfo.surname)) return false;
-        if (!Objects.equals(phone, userInfo.phone)) return false;
-        if (!Objects.equals(email, userInfo.email)) return false;
-        return Objects.equals(user, userInfo.user);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (surname != null ? surname.hashCode() : 0);
-        result = 31 * result + (phone != null ? phone.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "UserInfo{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", phone='" + phone + '\'' +
-                ", email='" + email + '\'' +
-                ", user=" + user +
-                '}';
-    }
 }

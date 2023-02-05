@@ -12,13 +12,38 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Event type module test")
+@DisplayName("EventTypeRepository module test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class EventTypeRepositoryTest {
 
     @Autowired
     private EventTypeRepository eventTypeRepository;
+
+    @Autowired
+    private EventTypeRepositoryJpa eventTypeRepositoryJpa;
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventTypeByType_withExistingEventType_shouldProperlyFindEventType() {
+        //given
+        String EXISTING_EVENT_TYPE = "Regional";
+        //when
+        Optional<EventType> ACTUAL_EVENT_TYPE = eventTypeRepositoryJpa.findEventTypeByType(EXISTING_EVENT_TYPE);
+        //then
+        assertThat(ACTUAL_EVENT_TYPE).isPresent();
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventTypeByType_withNotExistingEventType_shouldProperlyFindEventType() {
+        //given
+        String NOT_EXISTING_EVENT_TYPE = "NOT_EXISTING";
+        //when
+        Optional<EventType> ACTUAL_EVENT_TYPE = eventTypeRepositoryJpa.findEventTypeByType(NOT_EXISTING_EVENT_TYPE);
+        //then
+        assertThat(ACTUAL_EVENT_TYPE).isNotPresent();
+    }
 
     @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
@@ -33,7 +58,7 @@ class EventTypeRepositoryTest {
 
     @Sql(scripts = {"/sql/clearDatabase.sql"})
     @Test
-    public void save_withNewEventType_shouldProperlySaveNewEventType(){
+    public void save_withNewEventType_shouldProperlySaveNewEventType() {
         //given
         EventType newEventType = new EventType();
         newEventType.setType("Localize");

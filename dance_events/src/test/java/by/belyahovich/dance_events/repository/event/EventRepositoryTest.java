@@ -1,6 +1,7 @@
 package by.belyahovich.dance_events.repository.event;
 
 import by.belyahovich.dance_events.domain.Event;
+import by.belyahovich.dance_events.domain.EventType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +9,14 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Event repository module test")
+@DisplayName("EventRepository module test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class EventRepositoryTest {
@@ -23,6 +26,92 @@ class EventRepositoryTest {
 
     @Autowired
     private EventRepositoryJpa eventRepositoryJpa;
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventByTitle_withExistingEvent_shouldProperlyFindEventByTitle() {
+        //given
+        String EVENT_TITLE_FOR_SEARCH_EXISTING = "MINSK-666";
+        //when
+        Optional<Event> ACTUAL_EVENT =
+                eventRepositoryJpa.findEventByTitle(EVENT_TITLE_FOR_SEARCH_EXISTING);
+        //then
+        assertThat(ACTUAL_EVENT).isPresent();
+        assertThat(ACTUAL_EVENT.get().getTitle()).isEqualTo(EVENT_TITLE_FOR_SEARCH_EXISTING);
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventByTitle_withNotExistingEvent_shouldProperlyFindEventByTitle() {
+        //given
+        String EVENT_TITLE_FOR_SEARCH_EXISTING = "SOME_NOT_EXISTING_TITLE";
+        //when
+        Optional<Event> ACTUAL_EVENT =
+                eventRepositoryJpa.findEventByTitle(EVENT_TITLE_FOR_SEARCH_EXISTING);
+        //then
+        assertThat(ACTUAL_EVENT).isEmpty();
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventsByTitleContainingIgnoreCase_withExistingEvent_shouldProperlyFindEventByTitle() {
+        //given
+        String EVENT_TITLE_FOR_LIKE_SEARCH_EXISTING = "MINSK";
+        String EVENT_TITLE_EXISTING = "MINSK-666";
+        //when
+        List<Event> ACTUAL_LIST_OF_EVENTS =
+                eventRepositoryJpa.findEventsByTitleContainingIgnoreCase(EVENT_TITLE_FOR_LIKE_SEARCH_EXISTING);
+        //then
+        assertThat(ACTUAL_LIST_OF_EVENTS).isNotEmpty();
+        assertThat(ACTUAL_LIST_OF_EVENTS.get(0).getTitle()).isEqualTo(EVENT_TITLE_EXISTING);
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventsByTitleContainingIgnoreCase_withNotExistingEvent_shouldProperlyFindEventByTitle() {
+        //given
+        String EVENT_TITLE_FOR_LIKE_SEARCH_NOT_EXISTING = "NOT_EXISTING_TITLE";
+        //when
+        List<Event> ACTUAL_LIST_OF_EVENTS =
+                eventRepositoryJpa.findEventsByTitleContainingIgnoreCase(EVENT_TITLE_FOR_LIKE_SEARCH_NOT_EXISTING);
+        //then
+        assertThat(ACTUAL_LIST_OF_EVENTS).isEmpty();
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventsByEventType_withExistingEvent_shouldProperlyFindEventByEventType() {
+        //given
+        EventType EXISTING_EVENT_TYPE = new EventType(4L, "International");
+        //when
+        List<Event> ACTUAL_LIST_OF_EVENTS = eventRepositoryJpa.findEventsByEventType(EXISTING_EVENT_TYPE);
+        //then
+        assertThat(ACTUAL_LIST_OF_EVENTS).isNotEmpty();
+        assertThat(ACTUAL_LIST_OF_EVENTS).hasSize(1);
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findEventsByEventType_withNotExistingEvent_shouldProperlyFindEventByEventType() {
+        //given
+        EventType EXISTING_EVENT_TYPE = new EventType(35L, "NOT_EXISTING_TYPE");
+        //when
+        List<Event> ACTUAL_LIST_OF_EVENTS = eventRepositoryJpa.findEventsByEventType(EXISTING_EVENT_TYPE);
+        //then
+        assertThat(ACTUAL_LIST_OF_EVENTS).isEmpty();
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    public void findAllByOrderByStartDateAsc_withExistingEvent_shouldProperlyFindAllSortedEvent() {
+        //given
+        int EXPECTED_COUNT_OF_EVENTS_ON_DB = 4;
+        //when
+        List<Event> ACTUAL_EVENTS_FROM_DB = eventRepositoryJpa.findAllByOrderByStartDateAsc();
+        //then
+        assertThat(ACTUAL_EVENTS_FROM_DB).hasSize(EXPECTED_COUNT_OF_EVENTS_ON_DB);
+        assertThat(ACTUAL_EVENTS_FROM_DB).isSortedAccordingTo(Comparator.comparing(Event::getStartDate));
+    }
 
     @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
@@ -64,17 +153,6 @@ class EventRepositoryTest {
         //then
         Iterable<Event> expectedEventsFromDB = eventRepository.findAll();
         assertThat(expectedEventsFromDB).hasSize(ALL_COUNT_OFF_EVENTS_AFTER_DELETE_ONE);
-    }
-
-    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
-    @Test
-    public void findEventByTitle_withExistingEvent_shouldProperlyFindEventByTitle() {
-        //given
-        String EVENT_TITLE_FOR_SEARCH = "MINSK-666";
-        //when
-        Optional<Event> foundedEventByTitleFromDB = eventRepositoryJpa.findEventByTitle(EVENT_TITLE_FOR_SEARCH);
-        //then
-        assertThat(foundedEventByTitleFromDB).isPresent();
     }
 
     @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})

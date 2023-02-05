@@ -1,12 +1,16 @@
 package by.belyahovich.dance_events.service.user.implementation;
 
 import by.belyahovich.dance_events.config.ResourceNotFoundException;
+import by.belyahovich.dance_events.controller.authorization.ProfileRequest;
 import by.belyahovich.dance_events.domain.Event;
 import by.belyahovich.dance_events.domain.Role;
 import by.belyahovich.dance_events.domain.User;
-import by.belyahovich.dance_events.repository.role.RoleRepository;
+import by.belyahovich.dance_events.dto.EventDTO;
+import by.belyahovich.dance_events.dto.EventDTOMapper;
+import by.belyahovich.dance_events.repository.event.EventRepository;
 import by.belyahovich.dance_events.repository.user.UserRepository;
 import by.belyahovich.dance_events.repository.user.UserRepositoryJpa;
+import by.belyahovich.dance_events.service.role.RoleService;
 import by.belyahovich.dance_events.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,8 +19,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -24,15 +31,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserRepositoryJpa userRepositoryJpa;
-    private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final EventRepository eventRepository;
+    private final EventDTOMapper eventDTOMapper;
+    private final RoleService roleService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserRepositoryJpa userRepositoryJpa,
-                           RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository,
+                           UserRepositoryJpa userRepositoryJpa,
+                           EventRepository eventRepository,
+                           EventDTOMapper eventDTOMapper,
+                           RoleService roleService) {
         this.userRepository = userRepository;
         this.userRepositoryJpa = userRepositoryJpa;
-        this.roleRepository = roleRepository;
+        this.eventRepository = eventRepository;
+        this.eventDTOMapper = eventDTOMapper;
+        this.roleService = roleService;
     }
 
     @Override
@@ -47,55 +61,82 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         ));
     }
 
-    //todo test
     @Override
-    public Optional<User> findUserByLoginAndPassword(String login, String password) {
-        Optional<User> userByLogin = userRepositoryJpa.findUserByLogin(login);
-        if (userByLogin.isPresent()) {
-            if (bCryptPasswordEncoder.matches(password, userByLogin.get().getPassword())) {
-                return userByLogin;
+    public void findUserByLoginAndPassword(String login, String password) {
+        User userByLogin = userRepositoryJpa.findUserByLogin(login)
+                .orElseThrow(() -> new ResourceNotFoundException("INCORRECT LOGIN OR PASSWORD"));
+        if (userByLogin != null) {
+            if (!bCryptPasswordEncoder.matches(password, userByLogin.getPassword())) {
+                throw new ResourceNotFoundException("INCORRECT LOGIN OR PASSWORD");
             }
         }
-        return Optional.empty();
     }
 
     @Override
-    public User createUser(User user) {
-        Optional<User> userToSave = userRepositoryJpa.findUserByLogin(user.getLogin());
-        if (userToSave.isPresent()) {
-            throw new ResourceNotFoundException("THIS USER WITH LOGIN: " + user.getLogin() + " ALREADY EXISTS");
+    public void createUser(ProfileRequest request) {
+        Optional<User> userByLogin = userRepositoryJpa.findUserByLogin(request.login());
+        if (userByLogin.isPresent()) {
+            throw new ResourceNotFoundException("THIS USER WITH LOGIN: " +
+                    request.login() + " ALREADY EXISTS");
         }
-        Optional<Role> roleUserToSave = roleRepository.findById(user.getRole().getId());
-        if (roleUserToSave.isEmpty()) {
-            throw new ResourceNotFoundException("THIS ROLE: " + user.getRole().getRoleTitle() + " DOES NOT EXIST, FIRST CREATE IT");
-        }
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        Role role = roleService.findRoleByTitle(request.roleTitle())
+                .orElseThrow(() -> new ResourceNotFoundException("THIS ROLE: " +
+                        request.roleTitle() + " DOES NOT EXIST"));
+        User user = new User();
+        user.setLogin(request.login());
+        user.setPassword(bCryptPasswordEncoder.encode(request.password()));
+        user.setRole(role);
+        userRepository.save(user);
     }
 
     @Override
     public void deleteUser(User user) {
-        Optional<User> userToDelete = userRepositoryJpa.findUserByLogin(user.getLogin());
-        if (userToDelete.isEmpty()) {
-            throw new ResourceNotFoundException("THIS USER WITH LOGIN: " + user.getLogin() + " NOT EXISTS");
-        }
-        userRepository.deleteById(userToDelete.get().getId());
+        User userToDelete = userRepositoryJpa.findUserByLogin(user.getLogin())
+                .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH LOGIN: "
+                        + user.getLogin() + " NOT EXISTS"));
+        userRepository.deleteById(userToDelete.getId());
     }
 
     @Override
-    public void updateUserActive(String login, boolean active) {
-        userRepositoryJpa.findUserByLogin(login)
-                .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH LOGIN: " + login + " NOT EXISTS"));
-        userRepositoryJpa.updateUserActive(login, active);
+    public void updateUserActive(Long userId, boolean active) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH ID: " + userId + " NOT EXISTS"));
+        user.setActive(active);
+        userRepository.save(user);
     }
 
     @Override
-    public List<Event> getAllLikedUserEventsByUser(User user) {
-        Optional<User> userToSearch = userRepositoryJpa.findUserByLogin(user.getLogin());
-        if (userToSearch.isEmpty()) {
-            throw new ResourceNotFoundException("THIS USER WITH LOGIN: " + user.getLogin() + " NOT EXISTS");
+    public List<EventDTO> getAllLikedUserEventsSortedByStartDate(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH ID: " + userId + " NOT FOUND"));
+        return user.getLikedEvents()
+                .stream()
+                .map(eventDTOMapper)
+                .toList()
+                .stream().sorted(Comparator.comparing(EventDTO::startDate))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void addLikeEventToUser(Long userId, Long eventId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH ID: " + userId + " NOT FOUND"));
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("THIS EVENT WITH ID: " + eventId + " NOT FOUND"));
+        Set<Event> likedEvents = user.getLikedEvents();
+        likedEvents.add(event);
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deleteLikedEvent(Long userId, Long eventId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH ID: " + userId + " NOT FOUND"));
+        if (!user.getLikedEvents().removeIf(e -> e.getId() == eventId)) {
+            throw new ResourceNotFoundException("USER ID: " + userId + " DON'T HAVE EVENT ID: " + eventId);
         }
-        return userRepositoryJpa.getAllLikedUserEventsByUserLogin(user.getLogin());
+        userRepository.save(user);
     }
 
     @Override

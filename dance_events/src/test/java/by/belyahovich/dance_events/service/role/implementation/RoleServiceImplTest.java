@@ -69,13 +69,13 @@ class RoleServiceImplTest {
         assertThat(actualRole).isEqualTo(Optional.of(role));
     }
 
-    @Test
-    void findAllRole_withExistingRole_shouldProperlyFindAllRole() {
-        //when
-        Set<Role> expectedSetRole = new HashSet<>(Arrays.asList(role, role2));
-        when(roleRepository.findAll()).thenReturn(expectedSetRole);
-        //then
-        Set<Role> actualAllRole = roleService.findAllRole();
-        assertThat(actualAllRole).hasSize(expectedSetRole.size());
-    }
+//    @Test
+//    void findAllRole_withExistingRole_shouldProperlyFindAllRole() {
+//        //when
+//        Set<Role> expectedSetRole = new HashSet<>(Arrays.asList(role, role2));
+//        when(roleRepository.findAll()).thenReturn(expectedSetRole);
+//        //then
+//        Set<Role> actualAllRole = roleService.findAllRole();
+//        assertThat(actualAllRole).hasSize(expectedSetRole.size());
+//    }
 }

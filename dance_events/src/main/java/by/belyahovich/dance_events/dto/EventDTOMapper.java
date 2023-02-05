@@ -22,7 +22,11 @@ public class EventDTOMapper implements Function<Event, EventDTO> {
     }
 
     public Event toEvent(EventDTO eventDTO) {
-        return new Event(eventDTO.title(), eventDTO.startDate(), eventDTO.endDate(),
-                eventDTO.description());
+        return new Event(
+                eventDTO.title(),
+                eventDTO.startDate(),
+                eventDTO.endDate(),
+                eventDTO.description()
+        );
     }
 }

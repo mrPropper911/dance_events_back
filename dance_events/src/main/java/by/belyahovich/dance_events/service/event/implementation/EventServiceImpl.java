@@ -49,7 +49,6 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventDTO> findEventByEventType(String eventTypeTitle) {
-        //searching event type for add to new event
         EventType eventTypeByTitle =
                 eventTypeService.findEventTypeByTitle(eventTypeTitle).
                         orElseThrow(() -> new ResourceNotFoundException(
@@ -71,21 +70,12 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event createEvent(Event event) {
-        Optional<Event> eventByTitle = eventRepositoryJpa.findEventByTitle(event.getTitle());
-        if (eventByTitle.isPresent()) {
-            throw new ResourceNotFoundException("THIS EVEN WITH TITLE: " + event.getTitle() + " ALREADY EXISTS");
-        }
-        return eventRepository.save(event);
-    }
-
-    @Override
-    public EventDTO createNewEvent(EventDTO eventDTO) {
+    public void createNewEvent(EventDTO eventDTO) {
         Optional<Event> eventByTitle = eventRepositoryJpa.findEventByTitle(eventDTO.title());
         if (eventByTitle.isPresent()) {
             throw new ResourceNotFoundException("THIS EVEN WITH TITLE: " + eventDTO.title() + " ALREADY EXISTS");
         }
-        //searching event type for add to new event
+        //Searching event type for add to new event
         EventType eventTypeByTitle =
                 eventTypeService.findEventTypeByTitle(eventDTO.eventTypeTitle()).
                         orElseThrow(() -> new ResourceNotFoundException(
@@ -96,35 +86,34 @@ public class EventServiceImpl implements EventService {
         eventToSave.setActive(true);
         eventToSave.setEventType(eventTypeByTitle);
 
-        Event saveEvent = eventRepository.save(eventToSave);
-        return new EventDTOMapper().apply(saveEvent);
+        eventRepository.save(eventToSave);
     }
 
     @Override
     public void updateEvent(EventDTO eventDTO) {
-        //searching event type for update event
         EventType eventTypeByTitle =
                 eventTypeService.findEventTypeByTitle(eventDTO.eventTypeTitle()).
                         orElseThrow(() -> new ResourceNotFoundException(
                                 "THIS EVENT TYPE: " + eventDTO.eventTypeTitle() + " NOT EXIST"
                         ));
-        Event eventByTitle = eventRepository.findById(eventDTO.id())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "THIS EVENT WITH ID : " + eventDTO.id() + " NOT EXIST"
-                ));
+        Event eventById =
+                eventRepository.findById(eventDTO.id())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "THIS EVENT WITH ID : " + eventDTO.id() + " NOT EXIST"
+                        ));
 
-        eventByTitle.setTitle(eventDTO.title());
-        eventByTitle.setDescription(eventDTO.description());
-        eventByTitle.setStartDate(eventDTO.startDate());
-        eventByTitle.setEndDate(eventDTO.endDate());
-        eventByTitle.setEventType(eventTypeByTitle);
-        eventByTitle.setActive(eventDTO.active());
+        eventById.setTitle(eventDTO.title());
+        eventById.setDescription(eventDTO.description());
+        eventById.setStartDate(eventDTO.startDate());
+        eventById.setEndDate(eventDTO.endDate());
+        eventById.setEventType(eventTypeByTitle);
+        eventById.setActive(eventDTO.active());
 
-        eventRepository.save(eventByTitle);
+        eventRepository.save(eventById);
     }
 
     @Override
-    public List<EventDTO> findAllEvents() {
+    public List<EventDTO> findAllEventsSortedByStartDate() {
         return eventRepositoryJpa.findAllByOrderByStartDateAsc()
                 .stream()
                 .map(eventDTOMapper)

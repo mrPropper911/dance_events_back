@@ -16,11 +16,9 @@ public interface EventService {
 
     void deleteEventByTitle (String title);
 
-    Event createEvent (Event event);//todo delete
-
-    EventDTO createNewEvent (EventDTO eventDTO);
+    void createNewEvent (EventDTO eventDTO);
 
     void updateEvent (EventDTO eventDTO);
 
-    List<EventDTO> findAllEvents ();
+    List<EventDTO> findAllEventsSortedByStartDate ();
 }

@@ -12,16 +12,16 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Role repository module test")
+@DisplayName("RoleRepository module test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class RoleRepositoryTest {
 
     @Autowired
     private RoleRepository roleRepository;
+
     @Autowired
     private RoleRepositoryJpa roleRepositoryJpa;
-
 
     @Sql(scripts = {"/sql/clearDatabase.sql"})
     @Test
@@ -41,7 +41,7 @@ class RoleRepositoryTest {
 
     @Sql(scripts = {"/sql/clearDatabase.sql"})
     @Test
-    public void findRoleByTitle_withExistingRoleFromSave_shouldProperlyFindRole() {
+    public void findByRoleTitle_withExistingRoleFromSave_shouldProperlyFindRole() {
         //given
         String ROLE_TITLE_FOR_SEARCH = "Administrator-Test";
         Role newRole = new Role();
@@ -56,7 +56,7 @@ class RoleRepositoryTest {
 
     @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
-    public void findRoleByTitle_withExistingRole_shouldProperlyFindRole(){
+    public void findByRoleTitle_withExistingRole_shouldProperlyFindRole() {
         //given
         String ROLE_TITLE_FOR_SEARCH = "Administrator";
         Optional<Role> actualRole = roleRepositoryJpa.findByRoleTitle(ROLE_TITLE_FOR_SEARCH);
@@ -66,13 +66,11 @@ class RoleRepositoryTest {
 
     @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
     @Test
-    public void findAll_withExistingRole_shouldProperlyFindAllRole (){
+    public void findAll_withExistingRole_shouldProperlyFindAllRole() {
         //given
         int EXPECTED_SIZE_OF_ROLE = 3;
         Iterable<Role> actualRole = roleRepository.findAll();
         //then
         assertThat(actualRole).hasSize(EXPECTED_SIZE_OF_ROLE);
     }
-
-
 }

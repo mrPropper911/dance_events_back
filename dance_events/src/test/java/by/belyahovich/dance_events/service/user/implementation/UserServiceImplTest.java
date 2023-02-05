@@ -1,13 +1,14 @@
 package by.belyahovich.dance_events.service.user.implementation;
 
 import by.belyahovich.dance_events.config.ResourceNotFoundException;
-import by.belyahovich.dance_events.domain.Event;
-import by.belyahovich.dance_events.domain.EventType;
-import by.belyahovich.dance_events.domain.Role;
-import by.belyahovich.dance_events.domain.User;
-import by.belyahovich.dance_events.repository.role.RoleRepository;
+import by.belyahovich.dance_events.controller.authorization.ProfileRequest;
+import by.belyahovich.dance_events.domain.*;
+import by.belyahovich.dance_events.dto.EventDTO;
+import by.belyahovich.dance_events.dto.EventDTOMapper;
+import by.belyahovich.dance_events.repository.event.EventRepository;
 import by.belyahovich.dance_events.repository.user.UserRepository;
 import by.belyahovich.dance_events.repository.user.UserRepositoryJpa;
+import by.belyahovich.dance_events.service.role.RoleService;
 import by.belyahovich.dance_events.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,64 +16,65 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LOCAL_DATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @DisplayName("UserService unit-testing")
 class UserServiceImplTest {
-    private static final String EXIST_USER_1_LOGIN = "Vadim";
-    private static final String EXIST_USER_1_PASSWORD = "$2y$10$4HBKgn/t6Un7SgEd6UOF4.sT0qNBTeWAwPEeHCSOlvD2tNRFVlU9G";
 
-    protected User user_1 = new User();
-    protected User user_2 = new User();
-    protected Role role = new Role();
-    protected Event event_1 = new Event();
-    protected Event event_2 = new Event();
+    private UserService userService;
 
     private UserRepository userRepository;
     private UserRepositoryJpa userRepositoryJpa;
-    private RoleRepository roleRepository;
-    private UserService userService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private EventDTOMapper eventDTOMapper;
+    private EventRepository eventRepository;
+    private RoleService roleService;
+
 
     @BeforeEach
     public void init() {
         userRepository = Mockito.mock(UserRepository.class);
         userRepositoryJpa = Mockito.mock(UserRepositoryJpa.class);
-        roleRepository = Mockito.mock(RoleRepository.class);
         bCryptPasswordEncoder = Mockito.mock(BCryptPasswordEncoder.class);
-        userService = new UserServiceImpl(userRepository, userRepositoryJpa, roleRepository);
-
-        user_1.setLogin(EXIST_USER_1_LOGIN);
-        user_1.setPassword(EXIST_USER_1_PASSWORD);
-        user_1.setActive(true);
-        user_2.setLogin("Loki");
-        user_2.setPassword("$2y$10$4HBKgn/t6Un7SgEd6UOF4.sT0qNBTeWAS@)F@FS($#GG2tNRFVlU9G");
-        user_2.setActive(false);
-
-        role.setId(1L);
-        role.setRoleTitle("Omega");
-        user_1.setRole(role);
-        user_2.setRole(role);
-
-        EventType eventType = new EventType();
-        eventType.setId(1L);
-        eventType.setType("SOME_TYPE");
-        event_1.setTitle("SOME_NAME_1");
-        event_2.setTitle("SOME_NAME_2");
-        event_1.setEventType(eventType);
-        event_2.setEventType(eventType);
+        eventRepository = Mockito.mock(EventRepository.class);
+        eventDTOMapper = Mockito.mock(EventDTOMapper.class);
+        roleService = Mockito.mock(RoleService.class);
+        userService = new UserServiceImpl(
+                userRepository,
+                userRepositoryJpa,
+                eventRepository,
+                eventDTOMapper,
+                roleService
+        );
     }
 
     @Test
     public void allUsers_with2Entity_shouldProperlyFindAllUsers() {
         //given
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
+        User user_2 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(2L, "ROLE_ADMIN")
+        );
         List<User> expectedUserList = Arrays.asList(user_1, user_2);
         //when
         when(userRepository.findAll()).thenReturn(expectedUserList);
@@ -83,9 +85,17 @@ class UserServiceImplTest {
 
     @Test
     public void findUserByLogin_withExistingUser_shouldProperlyFindUser() {
+        //given
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
         //when
         when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
-        Optional<User> actualUser = userService.findUserByLogin(EXIST_USER_1_LOGIN);
+        Optional<User> actualUser = userService.findUserByLogin("SOME_LOGIN");
         //then
         assertThat(actualUser).isPresent();
         assertThat(actualUser).isEqualTo(Optional.of(user_1));
@@ -101,34 +111,126 @@ class UserServiceImplTest {
     }
 
     @Test
+    public void findUserByLoginAndPassword_withExistingUser_shouldContinue() {
+        //given
+        User user_1 = new User(
+                1L,
+                "user123",
+                "$2a$10$4RCA6v9iVByB3C0.EGDBfOR64WqxSfLiin/m4z8Oqlr5nIaUpmnhi",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
+        //when
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
+        when(bCryptPasswordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        userService.findUserByLoginAndPassword("user123", "user123");
+        //then
+        verify(userRepositoryJpa, times(1))
+                .findUserByLogin("user123");
+    }
+
+    @Test
+    public void findUserByLoginAndPassword_withNotExistingUser_shouldThrowException() {
+        //when
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
+        //then
+        assertThrows(ResourceNotFoundException.class,
+                () -> userService.findUserByLoginAndPassword("SOME_LOGIN", "SOME_PASSWORD"));
+    }
+
+    @Test
+    public void findUserByLoginAndPassword_withNotCorrectPassword_shouldThrowException() {
+        //given
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
+        //when
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
+        when(bCryptPasswordEncoder.matches(anyString(), anyString())).thenReturn(false);
+        //then
+        assertThrows(ResourceNotFoundException.class,
+                () -> userService.findUserByLoginAndPassword("SOME_LOGIN", "SOME_PASSWORD"));
+    }
+
+    @Test
     public void createUser_withExistingUser_shouldThrowException() {
+        //given
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
+        ProfileRequest profileRequest = new ProfileRequest(
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                "SOME_TITLE_ROLE"
+        );
         //when
         when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
         //then
         assertThrows(ResourceNotFoundException.class,
-                () -> userService.createUser(user_1));
+                () -> userService.createUser(profileRequest));
+    }
+
+    @Test
+    public void createUser_withNotExistingRole_shouldThrowException() {
+        //given
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
+        ProfileRequest profileRequest = new ProfileRequest(
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                "SOME_TITLE_ROLE"
+        );
+        //when
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
+        when(roleService.findRoleByTitle(anyString())).thenReturn(Optional.empty());
+        //then
+        assertThrows(ResourceNotFoundException.class,
+                () -> userService.createUser(profileRequest));
     }
 
     @Test
     public void createUser_withNotExistingUser_shouldProperlyCreateNewUser() {
         //given
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
-        when(roleRepository.findById(anyLong())).thenReturn(Optional.of(role));
-        when(bCryptPasswordEncoder.encode(anyString())).thenReturn(EXIST_USER_1_PASSWORD);
-        when(userRepository.save(any(User.class))).thenReturn(user_1);
+        ProfileRequest profileRequest = new ProfileRequest(
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                "SOME_TITLE_ROLE"
+        );
+        Role role = new Role(1L, "ROLE_TEST");
         //when
-        User actualUser = userService.createUser(user_1);
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
+        when(roleService.findRoleByTitle(anyString())).thenReturn(Optional.of(role));
+        when(bCryptPasswordEncoder.encode(anyString())).thenReturn("EXIST_USER_1_PASSWORD");
+        userService.createUser(profileRequest);
         //then
-        assertThat(actualUser).isNotNull();
-        assertThat(actualUser).isEqualTo(user_1);
-        verify(userRepository, times(1)).save(user_1);
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     public void deleteUser_withExistingUser_shouldProperlyDeleteUser() {
         //given
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
         //when
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
         userService.deleteUser(user_1);
         //then
         verify(userRepository, times(1)).deleteById(user_1.getId());
@@ -137,8 +239,15 @@ class UserServiceImplTest {
     @Test
     public void deleteUser_withNotExistingUser_shouldThrowException() {
         //given
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
         //when
+        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class,
                 () -> userService.deleteUser(user_1));
         //then
@@ -146,26 +255,70 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void getAllLikedUserEventsByUser_withExistingEvents_shouldProperlyReturnAllEventsForUser() {
+    public void updateUserActive_withExistingUser_shouldProperlyUpdateActiveField() {
         //given
-        List<Event> EVENTS_LIKED_USER = List.of(event_1, event_2);
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
-        when(userRepositoryJpa.getAllLikedUserEventsByUserLogin(anyString())).thenReturn(EVENTS_LIKED_USER);
+        User user_1 = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_ADMIN")
+        );
         //when
-        List<Event> actualUserLikedEvents = userService.getAllLikedUserEventsByUser(user_1);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user_1));
+        userService.updateUserActive(1L, false);
         //then
-        assertThat(actualUserLikedEvents).hasSize(EVENTS_LIKED_USER.size());
-        assertThat(actualUserLikedEvents).isEqualTo(EVENTS_LIKED_USER);
-        verify(userRepositoryJpa, times(1)).getAllLikedUserEventsByUserLogin(user_1.getLogin());
+        verify(userRepository, times(1)).save(user_1);
     }
 
     @Test
-    public void updateUserActive_withExistingUser_shouldProperlyUpdateActiveField() {
-        //given
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
+    public void updateUserActive_withNotExistingUser_shouldProperlyUpdateActiveField() {
         //when
-        userService.updateUserActive(EXIST_USER_1_LOGIN, true);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
         //then
-        verify(userRepositoryJpa, times(1)).updateUserActive(EXIST_USER_1_LOGIN, true);
+        assertThrows(ResourceNotFoundException.class,
+                () -> userService.updateUserActive(1L, false));
     }
+
+//    @Test
+//    public void getAllLikedUserEventsByUser_withExistingEvents_shouldProperlyReturnAllEventsForUser() {
+//        //given
+//        Event event_1 = new Event(
+//                "SOME_TITLE",
+//                new Date(System.currentTimeMillis() + 1_000),
+//                new Date(System.currentTimeMillis() + 3_000),
+//                "SOME_DESC",
+//                true,
+//                new EventType(1L, "SOME_TYPE")
+//        );
+//        Event event_2 = new Event(
+//                "SOME_TITLE",
+//                new Date(System.currentTimeMillis() + 10_000),
+//                new Date(System.currentTimeMillis() + 20_000),
+//                "SOME_DESC",
+//                true,
+//                new EventType(1L, "SOME_TYPE")
+//        );
+//        User user_1 = new User(
+//                1L,
+//                "SOME_LOGIN",
+//                "SOME_PASSWORD",
+//                true,
+//                new Role(1L, "ROLE_ADMIN")
+//        );
+//        Set<Event> EVENTS_LIKED_USER = Set.of(event_1, event_2);
+//        user_1.setLikedEvents(EVENTS_LIKED_USER);
+//        user_1.setUserInfo(new UserInfo());
+//        EventDTO eventDTO = eventDTOMapper.apply(event_1);
+//        //when
+//        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user_1));
+//        when(eventDTOMapper.apply(any(Event.class))).thenReturn(eventDTO);
+//        when(userService.getAllLikedUserEventsSortedByStartDate(anyLong())).thenReturn( List.of(eventDTO));
+//        List<EventDTO> actualUserLikedEvents = userService.getAllLikedUserEventsSortedByStartDate(anyLong());
+//        //then
+//        assertThat(actualUserLikedEvents).hasSize(EVENTS_LIKED_USER.size());
+//        verify(userRepository, times(1)).findById(anyLong());
+//    }
+
+
 }

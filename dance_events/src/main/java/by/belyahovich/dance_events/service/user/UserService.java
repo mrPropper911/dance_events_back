@@ -1,7 +1,9 @@
 package by.belyahovich.dance_events.service.user;
 
+import by.belyahovich.dance_events.controller.authorization.ProfileRequest;
 import by.belyahovich.dance_events.domain.Event;
 import by.belyahovich.dance_events.domain.User;
+import by.belyahovich.dance_events.dto.EventDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,14 +13,17 @@ public interface UserService {
 
     Optional<User> findUserByLogin(String login);
 
-    Optional<User> findUserByLoginAndPassword(String login, String password);
+    void findUserByLoginAndPassword(String login, String password);
 
-    User createUser(User user);
+    void createUser(ProfileRequest request);
 
     void deleteUser(User user);
 
-    void updateUserActive (String login, boolean active);
+    void updateUserActive (Long userId, boolean active);
 
-    List<Event> getAllLikedUserEventsByUser (User user);
+    List<EventDTO> getAllLikedUserEventsSortedByStartDate (Long userId);
 
+    void addLikeEventToUser(Long userId, Long eventId);
+
+    void deleteLikedEvent(Long userId, Long eventId);
 }

@@ -2,6 +2,7 @@ package by.belyahovich.dance_events.service.eventtype.implementation;
 
 import by.belyahovich.dance_events.domain.EventType;
 import by.belyahovich.dance_events.repository.eventtype.EventTypeRepository;
+import by.belyahovich.dance_events.repository.eventtype.EventTypeRepositoryJpa;
 import by.belyahovich.dance_events.service.eventtype.EventTypeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,11 +22,13 @@ class EventTypeServiceImplTest {
     protected EventType eventType = new EventType();
     private EventTypeRepository eventTypeRepository;
     private EventTypeService eventTypeService;
+    private EventTypeRepositoryJpa eventTypeRepositoryJpa;
 
     @BeforeEach
     public void init() {
         eventTypeRepository = Mockito.mock(EventTypeRepository.class);
-        eventTypeService = new EventTypeServiceImpl(eventTypeRepository);
+        eventTypeRepositoryJpa = Mockito.mock(EventTypeRepositoryJpa.class);
+        eventTypeService = new EventTypeServiceImpl(eventTypeRepository, eventTypeRepositoryJpa);
 
         eventType.setId(1L);
         eventType.setType("SOME_TITLE");

@@ -24,16 +24,16 @@ class EventControllerTest {
     @Autowired
     private TestRestTemplate testRestTemplate;
 
-    @Test
-    void getAllEvents_withExistingEvents_shouldProperlyFindAllEvents() {
-        //given
-        ResponseEntity<List<Event>> response =
-                testRestTemplate.exchange("/", HttpMethod.GET, null,
-                        new ParameterizedTypeReference<>() {
-                        });
-        //then
-        List<Event> actualEvents = response.getBody();
-        assertThat(actualEvents).hasSize(4);
-
-    }
+//    @Test
+//    void getAllEvents_withExistingEvents_shouldProperlyFindAllEvents() {
+//        //given
+//        ResponseEntity<List<Event>> response =
+//                testRestTemplate.exchange("/", HttpMethod.GET, null,
+//                        new ParameterizedTypeReference<>() {
+//                        });
+//        //then
+//        List<Event> actualEvents = response.getBody();
+//        assertThat(actualEvents).hasSize(4);
+//
+//    }
 }

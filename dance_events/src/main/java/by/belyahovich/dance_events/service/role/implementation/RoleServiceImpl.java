@@ -8,6 +8,7 @@ import by.belyahovich.dance_events.service.role.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -52,15 +53,12 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Set<Role> findAllRole() {
-        Set<Role> returnAllRole = new HashSet<>();
+    public Set<String> findAllRole() {
+        Set<String> returnAllRoleTitle = new HashSet<>();
         Iterable<Role> all = roleRepository.findAll();
-        for (Role iter : all) {
-            returnAllRole.add(new Role(iter.getId(), iter.getRoleTitle()));
+        for (Role iterator : all) {
+            returnAllRoleTitle.add(iterator.getRoleTitle());
         }
-        if (returnAllRole.isEmpty()) {
-            throw new ResourceNotFoundException("NO ROLE EXISTS");
-        }
-        return returnAllRole;
+        return returnAllRoleTitle;
     }
 }

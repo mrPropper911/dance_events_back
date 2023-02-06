@@ -12,29 +12,26 @@ import by.belyahovich.dance_events.service.eventtype.EventTypeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@DisplayName("EventService unit-testing")
+@DisplayName("EventService unit-test")
 class EventServiceImplTest {
 
-    private static final String NAME_OF_EVENT_1 = "SOME_NAME";
-
-    protected Event event_1 = new Event();
-    protected Event event_2 = new Event();
+    private EventService eventService;
 
     private EventRepository eventRepository;
     private EventRepositoryJpa eventRepositoryJpa;
-    private EventService eventService;
     private EventDTOMapper eventDTOMapper;
     private EventTypeService eventTypeService;
 
@@ -44,21 +41,27 @@ class EventServiceImplTest {
         eventRepository = Mockito.mock(EventRepository.class);
         eventDTOMapper = Mockito.mock(EventDTOMapper.class);
         eventTypeService = Mockito.mock(EventTypeService.class);
-        eventService = new EventServiceImpl(eventRepository, eventDTOMapper, eventRepositoryJpa, eventTypeService);
-        EventType eventType = new EventType();
-        eventType.setId(1L);
-        eventType.setType("SOME_TYPE");
-        event_1.setTitle(NAME_OF_EVENT_1);
-        event_2.setTitle("SOME_NAME_2");
-        event_1.setEventType(eventType);
-        event_2.setEventType(eventType);
+        eventService = new EventServiceImpl(
+                eventRepository,
+                eventDTOMapper,
+                eventRepositoryJpa,
+                eventTypeService
+        );
     }
 
     @Test
     void findEventByTitle_withExistingEvent_shouldProperlyFindEvent() {
+        //given
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
         //when
         when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.of(event_1));
-        Optional<Event> actualEvent = eventService.findEventByTitle(NAME_OF_EVENT_1);
+        Optional<Event> actualEvent = eventService.findEventByTitle("Title");
         //then
         assertThat(actualEvent).isPresent();
         assertThat(actualEvent).isEqualTo(Optional.of(event_1));
@@ -69,17 +72,94 @@ class EventServiceImplTest {
         //when
         when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.empty());
         //then
-        assertThrows(ResourceNotFoundException.class,
-                () -> eventService.findEventByTitle(NAME_OF_EVENT_1));
+        assertThatThrownBy(() -> eventService.findEventByTitle("Title"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("EVENT WITH TITLE: Title NOT EXIST");
     }
 
     @Test
-    void deleteEventByTitle_withExistingEvent_shouldProperlyReturnEvent() {
+    void findEventLikeTitle_withExistingEvent_shouldProperlyFindEvent() {
+        //given
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Ev_Type",
+                true
+        );
+        //when
+        when(eventRepositoryJpa.findEventsByTitleContainingIgnoreCase(anyString())).thenReturn(List.of(event_1));
+        when(eventDTOMapper.apply(any())).thenReturn(eventDTO);
+        List<EventDTO> actualEvent = eventService.findEventLikeTitle("Tit");
+        //then
+        assertThat(actualEvent).hasSize(1);
+    }
+
+    @Test
+    public void findEventByEventType_withNotExistingType_shouldThrowException() {
+        //when
+        when(eventTypeService.findEventTypeByTitle(anyString())).thenReturn(Optional.empty());
+        //then
+        assertThatThrownBy(() -> eventService.findEventByEventType("EV_TYPE"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("THIS EVENT TYPE: EV_TYPE NOT EXIST");
+
+    }
+
+    @Test
+    public void findEventByEventType_withExistingEventType_shouldProperlyFound() {
+        //given
+        EventType eventType = new EventType(1L, "EV_TYPE");
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
+        //when
+        when(eventTypeService.findEventTypeByTitle(anyString())).thenReturn(Optional.of(eventType));
+        when(eventRepositoryJpa.findEventsByEventType(eventType)).thenReturn(List.of(event_1));
+        when(eventDTOMapper.apply(any())).thenReturn(eventDTO);
+        List<EventDTO> actualEvType = eventService.findEventByEventType("EV_TYPE");
+        //then
+        assertThat(actualEvType).isNotEmpty();
+        assertThat(actualEvType).hasSize(1);
+    }
+
+    @Test
+    void deleteEventByTitle_withExistingEvent_shouldProperlyDeleteEvent() {
+        //given
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
         //when
         when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.of(event_1));
         //then
-        eventService.deleteEventByTitle(NAME_OF_EVENT_1);
-        verify(eventRepositoryJpa, times(1)).deleteEventByTitle(NAME_OF_EVENT_1);
+        eventService.deleteEventByTitle("Title");
+        verify(eventRepositoryJpa).deleteEventByTitle("Title");
     }
 
     @Test
@@ -88,40 +168,198 @@ class EventServiceImplTest {
         when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.empty());
         //then
         assertThrows(ResourceNotFoundException.class,
-                () -> eventService.deleteEventByTitle(NAME_OF_EVENT_1));
+                () -> eventService.deleteEventByTitle(anyString()));
     }
 
-//    @Test
-//    void createEvent_withNotExistingEvent_shouldProperlyCreateNewEvent() {
-//        //when
-//        when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.empty());
-//        when(eventRepository.save(any(Event.class))).thenReturn(event_1);
-//
-//        //then
-//        Event actualEvent = eventService.createEvent(event_1);
-//        assertThat(actualEvent).isNotNull();
-//        assertThat(actualEvent).isEqualTo(event_1);
-//        verify(eventRepository, times(1)).save(event_1);
-//    }
+    @Test
+    void createNewEvent_withExistingEvent_shouldThrowException() {
+        //given
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        //when
+        when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.of(event_1));
+        //then
+        assertThatThrownBy(() -> eventService.createNewEvent(eventDTO))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("THIS EVEN WITH TITLE: Title ALREADY EXISTS");
+        verify(eventRepository, never()).save(any());
+    }
 
-//    @Test
-//    void createEvent_withExistingEvent_shouldThrowException() {
-//        //when
-//        when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.of(event_1));
-//        //then
-//        assertThrows(ResourceNotFoundException.class,
-//                () -> eventService.createEvent(event_1));
-//    }
+    @Test
+    void createNewEvent_withNotExistingEventType_shouldThrowException() {
+        //given
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        //when
+        when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.empty());
+        when(eventTypeService.findEventTypeByTitle(anyString())).thenReturn(Optional.empty());
+        //then
+        assertThatThrownBy(() -> eventService.createNewEvent(eventDTO))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("THIS EVENT TYPE: EV_TYPE NOT EXIST");
 
-//    @Test
-//    void findAllByOrderByStartDateAsc_withExistingEvent_shouldProperlyFindAllEvents() {
-//        //when
-//        List<EventDTO> expectedEventList = new ArrayList<>(Arrays.asList(event_1, event_2));
-//        when(eventRepositoryJpa.findAllByOrderByStartDateAsc()).thenReturn(expectedEventList);
-//        //then
-//        List<EventDTO> actualAllEvents = eventService.findAllEvents();
-//        assertThat(actualAllEvents).hasSize(expectedEventList.size());
-//        assertThat(actualAllEvents.get(0).title()).isEqualTo(NAME_OF_EVENT_1);
-//    }
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    void createNewEvent_withExistingEventType_shouldProperlyCreate() {
+        //given
+        EventType eventType = new EventType(1L, "EV_TYPE");
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        //when
+        when(eventRepositoryJpa.findEventByTitle(anyString())).thenReturn(Optional.empty());
+        when(eventTypeService.findEventTypeByTitle(anyString())).thenReturn(Optional.of(eventType));
+        when(eventDTOMapper.toEvent(any())).thenReturn(event_1);
+        eventService.createNewEvent(eventDTO);
+        //then
+
+        ArgumentCaptor<Event> userArgumentCaptor =
+                ArgumentCaptor.forClass(Event.class);
+
+        verify(eventRepository).save(userArgumentCaptor.capture());
+        Event capturedEvent = userArgumentCaptor.getValue();
+        assertThat(capturedEvent).isEqualTo(event_1);
+    }
+
+    @Test
+    public void updateEvent_withNotExistingEventType_shouldThrowException() {
+        //given
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        //when
+        when(eventTypeService.findEventTypeByTitle(anyString())).thenReturn(Optional.empty());
+        //then
+        assertThatThrownBy(() -> eventService.updateEvent(eventDTO))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("THIS EVENT TYPE: EV_TYPE NOT EXIST");
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    public void updateEvent_withNotExistingEvent_shouldThrowException() {
+        //given
+        EventType eventType = new EventType(1L, "EV_TYPE");
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        //when
+        when(eventTypeService.findEventTypeByTitle(anyString())).thenReturn(Optional.of(eventType));
+        when(eventRepository.findById(anyLong())).thenReturn(Optional.empty());
+        //then
+        assertThatThrownBy(() -> eventService.updateEvent(eventDTO))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("THIS EVENT WITH ID: 1 NOT EXIST");
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    public void updateEvent_withExistingEvent_shouldProperlyEvent() {
+        //given
+        EventType eventType = new EventType(1L, "EV_TYPE");
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
+        //when
+        when(eventTypeService.findEventTypeByTitle(anyString())).thenReturn(Optional.of(eventType));
+        when(eventRepository.findById(anyLong())).thenReturn(Optional.of(event_1));
+        eventService.updateEvent(eventDTO);
+        //then
+        ArgumentCaptor<Event> eventArgumentCaptor =
+                ArgumentCaptor.forClass(Event.class);
+
+        verify(eventRepository).save(eventArgumentCaptor.capture());
+        Event capturedEvent = eventArgumentCaptor.getValue();
+        assertThat(capturedEvent).isEqualTo(event_1);
+    }
+
+    @Test
+    public void findAllEventsSortedByStartDate_withExistingEvents_shouldProperlyFindAllEvents() {
+        //given
+        Event event_1 = new Event(
+                1L,
+                "Title",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "Description"
+        );
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        //when
+        when(eventRepositoryJpa.findAllByOrderByStartDateAsc()).thenReturn(List.of(event_1));
+        when(eventDTOMapper.apply(any())).thenReturn(eventDTO);
+        List<EventDTO> actualAllEventsSortedByStartDate = eventService.findAllEventsSortedByStartDate();
+        //then
+        assertThat(actualAllEventsSortedByStartDate).isNotEmpty();
+        assertThat(actualAllEventsSortedByStartDate).hasSize(1);
+    }
 
 }

@@ -22,7 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Registration controller unit-test")
+@DisplayName("RegistrationController integration test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -73,7 +73,7 @@ class RegistrationControllerTest {
     }
 
     @Test
-    public void signUpPOST_withCreateExistingUser_shouldProperlyReturnStatus400() {
+    public void signUpPOST_withExistingUser_shouldProperlyReturnStatus400() {
         //given
         ProfileRequest profileRequest =
                 new ProfileRequest(SOME_LOGIN, SOME_PASSWORD, SOME_ROLE_TITLE);

@@ -19,7 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -106,15 +106,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public List<EventDTO> getAllLikedUserEventsSortedByStartDate(Long userId) {
+    public Set<EventDTO> getAllLikedUserEventsSortedByStartDate(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH ID: " + userId + " NOT FOUND"));
         return user.getLikedEvents()
                 .stream()
+                .sorted((o1, o2) -> o2.getStartDate().compareTo(o1.getStartDate()))
                 .map(eventDTOMapper)
-                .toList()
-                .stream().sorted(Comparator.comparing(EventDTO::startDate))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -123,8 +122,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH ID: " + userId + " NOT FOUND"));
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("THIS EVENT WITH ID: " + eventId + " NOT FOUND"));
-        Set<Event> likedEvents = user.getLikedEvents();
+        Set<Event> likedEvents = new HashSet<>(user.getLikedEvents());
         likedEvents.add(event);
+        user.setLikedEvents(likedEvents);
 
         userRepository.save(user);
     }
@@ -133,19 +133,25 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public void deleteLikedEvent(Long userId, Long eventId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("THIS USER WITH ID: " + userId + " NOT FOUND"));
-        if (!user.getLikedEvents().removeIf(e -> e.getId() == eventId)) {
+        Set<Event> likedEvents = new HashSet<>(user.getLikedEvents());
+        if (!likedEvents.removeIf(e -> e.getId() == eventId)) {
             throw new ResourceNotFoundException("USER ID: " + userId + " DON'T HAVE EVENT ID: " + eventId);
         }
         userRepository.save(user);
     }
 
     @Override
-    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
-        Optional<User> user = findUserByLogin(login);
-        if (user.isEmpty()) {
-            throw new ResourceNotFoundException("THIS USER WITH LOGIN: " + login + " NOT EXISTS");
-        }
-        return new org.springframework.security.core.userdetails.User(user.get().getLogin(), user.get().getPassword(),
-                true, true, true, true, user.get().getAuthorities());
+    public UserDetails loadUserByUsername(String login) {
+        User user = userRepositoryJpa.findUserByLogin(login)
+                .orElseThrow(() -> new UsernameNotFoundException("THIS USER WITH LOGIN: " + login + " NOT EXISTS"));
+        return new org.springframework.security.core.userdetails.User(
+                user.getLogin(),
+                user.getPassword(),
+                true,
+                true,
+                true,
+                true,
+                user.getAuthorities());
     }
+
 }

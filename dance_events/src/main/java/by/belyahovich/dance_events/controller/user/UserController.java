@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Set;
 
 @RestController
 public class UserController {
@@ -82,7 +82,7 @@ public class UserController {
      */
     @GetMapping("/users/{userId}/liked")
     public ResponseEntity<?> getAllLikedEventOfUserSortedByStartDate(@PathVariable Long userId) {
-        List<EventDTO> allLikedUserEvents = userService.getAllLikedUserEventsSortedByStartDate(userId);
+        Set<EventDTO> allLikedUserEvents = userService.getAllLikedUserEventsSortedByStartDate(userId);
         return new ResponseEntity<>(allLikedUserEvents, HttpStatus.OK);
     }
 

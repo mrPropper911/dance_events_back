@@ -62,10 +62,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteEventByTitle(String title) {
-        Optional<Event> eventByTitle = eventRepositoryJpa.findEventByTitle(title);
-        if (eventByTitle.isEmpty()) {
-            throw new ResourceNotFoundException("THIS EVENT WITH TITLE: " + title + " NOT EXISTS");
-        }
+        eventRepositoryJpa.findEventByTitle(title)
+                .orElseThrow(() -> new ResourceNotFoundException("THIS EVENT WITH TITLE: " + title + " NOT EXISTS"));
         eventRepositoryJpa.deleteEventByTitle(title);
     }
 
@@ -73,7 +71,8 @@ public class EventServiceImpl implements EventService {
     public void createNewEvent(EventDTO eventDTO) {
         Optional<Event> eventByTitle = eventRepositoryJpa.findEventByTitle(eventDTO.title());
         if (eventByTitle.isPresent()) {
-            throw new ResourceNotFoundException("THIS EVEN WITH TITLE: " + eventDTO.title() + " ALREADY EXISTS");
+            throw new ResourceNotFoundException("THIS EVEN WITH TITLE: " +
+                    eventDTO.title() + " ALREADY EXISTS");
         }
         //Searching event type for add to new event
         EventType eventTypeByTitle =
@@ -99,7 +98,7 @@ public class EventServiceImpl implements EventService {
         Event eventById =
                 eventRepository.findById(eventDTO.id())
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "THIS EVENT WITH ID : " + eventDTO.id() + " NOT EXIST"
+                                "THIS EVENT WITH ID: " + eventDTO.id() + " NOT EXIST"
                         ));
 
         eventById.setTitle(eventDTO.title());

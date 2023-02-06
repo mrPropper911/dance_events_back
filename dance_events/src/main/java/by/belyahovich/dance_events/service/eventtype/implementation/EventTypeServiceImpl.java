@@ -27,7 +27,8 @@ public class EventTypeServiceImpl implements EventTypeService {
     public EventType createEventType(EventType eventType) {
         Optional<EventType> actualEventType = eventTypeRepository.findById(eventType.getId());
         if (actualEventType.isPresent()){
-            throw new ResourceNotFoundException("THIS EVENT TYPE WITH TITLE: " + eventType.getId() + " ALREADY EXISTS");
+            throw new ResourceNotFoundException("THIS EVENT TYPE WITH TITLE: " +
+                    eventType.getId() + " ALREADY EXISTS");
         }
         return eventTypeRepository.save(eventType);
     }
@@ -43,10 +44,9 @@ public class EventTypeServiceImpl implements EventTypeService {
 
     @Override
     public void deleteEventType(EventType eventType) {
-        Optional<EventType> actualEventType = eventTypeRepository.findById(eventType.getId());
-        if (actualEventType.isEmpty()){
-            throw new ResourceNotFoundException("THIS EVENT TYPE WITH TITLE: " + eventType.getId() + " NOT EXISTS");
-        }
+        eventTypeRepository.findById(eventType.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("THIS EVENT TYPE WITH TITLE: "
+                        + eventType.getId() + " NOT EXISTS"));
         eventTypeRepository.delete(eventType);
     }
 }

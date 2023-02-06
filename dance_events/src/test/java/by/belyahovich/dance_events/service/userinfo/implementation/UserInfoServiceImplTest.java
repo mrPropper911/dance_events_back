@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@DisplayName("UserInfoService unit-testing")
+@DisplayName("UserInfoService unit-test")
 class UserInfoServiceImplTest {
 
     private UserInfoService userInfoService;

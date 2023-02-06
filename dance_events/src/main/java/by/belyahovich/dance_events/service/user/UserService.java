@@ -1,12 +1,12 @@
 package by.belyahovich.dance_events.service.user;
 
 import by.belyahovich.dance_events.controller.authorization.ProfileRequest;
-import by.belyahovich.dance_events.domain.Event;
 import by.belyahovich.dance_events.domain.User;
 import by.belyahovich.dance_events.dto.EventDTO;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserService {
     List<User> allUsers();
@@ -19,9 +19,9 @@ public interface UserService {
 
     void deleteUser(User user);
 
-    void updateUserActive (Long userId, boolean active);
+    void updateUserActive(Long userId, boolean active);
 
-    List<EventDTO> getAllLikedUserEventsSortedByStartDate (Long userId);
+    Set<EventDTO> getAllLikedUserEventsSortedByStartDate(Long userId);
 
     void addLikeEventToUser(Long userId, Long eventId);
 

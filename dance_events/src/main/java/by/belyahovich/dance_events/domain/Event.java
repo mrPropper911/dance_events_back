@@ -41,6 +41,14 @@ public class Event {
     @JoinColumn(name = "eventsByType")
     private EventType eventType;
 
+    public Event(long id, String title, Date startDate, Date endDate, String description) {
+        this.id = id;
+        this.title = title;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.description = description;
+    }
+
     public Event(String title, Date startDate, Date endDate, String description) {
         this.title = title;
         this.startDate = startDate;

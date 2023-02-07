@@ -26,21 +26,21 @@ public class EventController {
      * @return list of {@link EventDTO} and {@link HttpStatus}
      */
     @GetMapping("/events")
-    public ResponseEntity<?> getAllEvents() {
+    public ResponseEntity<?> getAllEventsSortedByStartDate() {
         List<EventDTO> allEvents = eventService.findAllEventsSortedByStartDate();
         return new ResponseEntity<>(allEvents, HttpStatus.OK);
     }
 
     /**
      * <h2>Search events like title</h2>
-     * Example request in postman: localhost:8080/events/search?title=1<p>
+     * Example request in postman: localhost:8080/events/title-search?title=AnyTitle<p>
      * To search event, the following parameters are required:
      *
      * @param title {@link EventDTO}
      * @return {@link HttpStatus} and list of like title Events
      */
-    @GetMapping("/events/search")
-    public ResponseEntity<?> getEventsLikeTitle(@RequestBody String title) {
+    @GetMapping("/events/title-search")
+    public ResponseEntity<?> getEventsLikeTitle(@RequestParam String title) {
         List<EventDTO> eventLikeTitle = eventService.findEventLikeTitle(title);
         return new ResponseEntity<>(eventLikeTitle, HttpStatus.OK);
     }
@@ -52,8 +52,8 @@ public class EventController {
      * @param eventType title of {@link EventType}
      * @return {@link HttpStatus} and sorting list of {@link EventDTO}
      */
-    @GetMapping("/events/type")
-    public ResponseEntity<?> getEventsByEventsType(@RequestBody String eventType) {
+    @GetMapping("/events/type-search")
+    public ResponseEntity<?> getEventsByEventsType(@RequestParam String eventType) {
         List<EventDTO> eventByEventType = eventService.findEventByEventType(eventType);
         return new ResponseEntity<>(eventByEventType, HttpStatus.OK);
     }
@@ -69,7 +69,7 @@ public class EventController {
     @PostMapping("/events")
     public ResponseEntity<?> createNewEvent(@RequestBody EventDTO newEvent) {
         eventService.createNewEvent(newEvent);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**

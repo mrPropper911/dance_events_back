@@ -56,7 +56,8 @@ public class Event {
         this.description = description;
     }
 
-    public Event(String title, Date startDate, Date endDate, String description, boolean active, EventType eventType) {
+    public Event(long id, String title, Date startDate, Date endDate, String description, boolean active, EventType eventType) {
+        this.id = id;
         this.title = title;
         this.startDate = startDate;
         this.endDate = endDate;

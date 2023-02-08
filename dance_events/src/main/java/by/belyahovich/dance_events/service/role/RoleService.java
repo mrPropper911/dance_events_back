@@ -13,6 +13,6 @@ public interface RoleService {
 
     Optional<Role> findRoleByTitle(String titleRole);
 
-    Set<Role> findAllRole();
+    Set<String> findAllRole();
 
 }

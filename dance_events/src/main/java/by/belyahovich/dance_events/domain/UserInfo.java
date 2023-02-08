@@ -31,46 +31,16 @@ public class UserInfo {
 
     //@MapsId id is not automatically used, but injected by the user's id
     //@JoinColumn rename foreign key
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL)
     @MapsId
     @JoinColumn(name = "id")
     private User user;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        UserInfo userInfo = (UserInfo) o;
-
-        if (id != userInfo.id) return false;
-        if (!Objects.equals(name, userInfo.name)) return false;
-        if (!Objects.equals(surname, userInfo.surname)) return false;
-        if (!Objects.equals(phone, userInfo.phone)) return false;
-        if (!Objects.equals(email, userInfo.email)) return false;
-        return Objects.equals(user, userInfo.user);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (surname != null ? surname.hashCode() : 0);
-        result = 31 * result + (phone != null ? phone.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "UserInfo{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", phone='" + phone + '\'' +
-                ", email='" + email + '\'' +
-                ", user=" + user +
-                '}';
+    public UserInfo(long id, String name, String surname, String phone, String email) {
+        this.id = id;
+        this.name = name;
+        this.surname = surname;
+        this.phone = phone;
+        this.email = email;
     }
 }

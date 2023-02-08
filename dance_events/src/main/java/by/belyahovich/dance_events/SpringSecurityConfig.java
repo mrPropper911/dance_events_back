@@ -28,7 +28,8 @@ public class SpringSecurityConfig {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/admin/*").hasRole("ADMINISTRATOR")
-                .antMatchers("/user/*").hasRole("ORGANIZER")
+                .antMatchers("/users/*").hasAnyRole("ORGANIZER","MEMBER")
+                .antMatchers("/users").hasAnyRole("ORGANIZER","MEMBER")
                 .antMatchers("/signin", "/signup", "/").permitAll()
                 .and()
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

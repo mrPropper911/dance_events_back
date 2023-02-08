@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -27,71 +26,54 @@ public class RegistrationController {
 
 
     @Autowired
-    public RegistrationController(UserService userService, RoleService roleService, JwtProvider jwtProvider) {
+    public RegistrationController(
+            UserService userService,
+            RoleService roleService,
+            JwtProvider jwtProvider) {
         this.userService = userService;
         this.roleService = roleService;
         this.jwtProvider = jwtProvider;
     }
 
     /**
-     * SignUp new user
-     * Create new user in database
+     * <h2>Get all title of role from database</h2>
+     *
+     * @return {@link HttpStatus} and set of {@link Role}
+     */
+    @GetMapping("/signup")
+    public ResponseEntity<?> getRoleForSignUp() {
+        Set<String> rolesFromDb = roleService.findAllRole();
+        return new ResponseEntity<>(rolesFromDb, HttpStatus.OK);
+    }
+
+    /**
+     * <h2>Sign Up</h2>
+     * Save new user in database<p>
+     * To create a new user, the following parameters are required:<p>
+     * - login (new uniq login for user)<p>
+     * - password (new password > 5 elements)<p>
+     * - roleTitle (must start with "ROLE_")<p>
      *
      * @param request {@link ProfileRequest}
-     *                To create a new user, the following parameters are required:
-     *                - login (new uniq login for user)
-     *                - password (new password > 5 elements)
-     *                - roleTitle (choose role of user)
-     * @return {@link HttpStatus} 201 - created, 400 - error, not created
+     * @return {@link HttpStatus}
      */
     @PostMapping("/signup")
     public ResponseEntity<User> signUp(@RequestBody @Valid ProfileRequest request) {
-        User userForAddToDatabase = new User();
-        userForAddToDatabase.setLogin(request.login());
-        userForAddToDatabase.setPassword(request.password());
-        userForAddToDatabase.setActive(true);
-        //Create Role entity from Database and add this Role to new User
-        Optional<Role> roleByTitle = roleService.findRoleByTitle(request.roleTitle());
-        userForAddToDatabase.setRole(roleByTitle.orElseThrow());
-        //Try to save user in database
-        try {
-            userService.createUser(userForAddToDatabase);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        userService.createUser(request);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**
-     * Get All role from database
-     * Needed to choose a role when creating a user
-     *
-     * @return {@link HttpStatus} and Set<Role>
-     */
-    @GetMapping("/signup")
-    public ResponseEntity<?> signUp() {
-        try {
-            Set<Role> rolesFromDb = roleService.findAllRole();
-            return new ResponseEntity<>(rolesFromDb, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-    }
-
-    /**
-     * User authentithication
+     * <h2>Sign In</h2>
+     * To authentithication, the following parameters are required:
      *
      * @param accountCredentials {@link AccountCredentials}
-     *                           To create a new user, the following parameters are required:
-     *                           - login
-     *                           - password
-     * @return {@link HttpStatus} jwt token.
+     * @return {@link HttpStatus} and {@link JwtProvider}
      */
     @PostMapping(value = "/signin")
     public ResponseEntity<?> signIn(@RequestBody AccountCredentials accountCredentials) {
-        Optional<User> userByLogin =
-                userService.findUserByLoginAndPassword(accountCredentials.login(), accountCredentials.password());
-        String token = jwtProvider.generateToken(userByLogin.orElseThrow().getLogin());
+        userService.findUserByLoginAndPassword(accountCredentials.login(), accountCredentials.password());
+        String token = jwtProvider.generateToken(accountCredentials.login());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Authorization")

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("UserInfo repository module test")
+@DisplayName("UserInfoRepository unit-test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserInfoRepositoryTest {
@@ -52,8 +52,8 @@ class UserInfoRepositoryTest {
         newUserInfo.setUser(savedUserToDB);
         newUserInfo.setName(NAME_NEW_USER);
         //when
-        UserInfo expectedUserInfo = userInfoRepository.save(newUserInfo);
-        Optional<UserInfo> actualUserInfoFromDB = userInfoRepository.findById(expectedUserInfo.getUser().getId());
+        userInfoRepository.save(newUserInfo);
+        Optional<UserInfo> actualUserInfoFromDB = userInfoRepository.findById(savedUserToDB.getId());
         //then
         assertThat(actualUserInfoFromDB).isPresent();
         assertThat(actualUserInfoFromDB.get().getName()).isEqualTo(NAME_NEW_USER);

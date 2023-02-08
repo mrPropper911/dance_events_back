@@ -1,18 +1,17 @@
 package by.belyahovich.dance_events.controller.mainform;
 
-import by.belyahovich.dance_events.domain.Event;
+import by.belyahovich.dance_events.domain.EventType;
+import by.belyahovich.dance_events.dto.EventDTO;
 import by.belyahovich.dance_events.service.event.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 public class EventController {
-    //todo getAllEvents to not auth., and getAllLikedByUserEvents for auth
 
     private final EventService eventService;
 
@@ -21,13 +20,69 @@ public class EventController {
         this.eventService = eventService;
     }
 
-    @GetMapping("/")
-    public ResponseEntity<?> getAllEvents(){
-        try {
-            List<Event> allEvents = eventService.findAllEvents();
-            return new ResponseEntity<>(allEvents, HttpStatus.OK);
-        } catch (Exception e){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
+    /**
+     * <h2>Getting a list of all events (sorted by date)</h2>
+     *
+     * @return list of {@link EventDTO} and {@link HttpStatus}
+     */
+    @GetMapping("/events")
+    public ResponseEntity<?> getAllEventsSortedByStartDate() {
+        List<EventDTO> allEvents = eventService.findAllEventsSortedByStartDate();
+        return new ResponseEntity<>(allEvents, HttpStatus.OK);
+    }
+
+    /**
+     * <h2>Search events like title</h2>
+     * Example request in postman: localhost:8080/events/title-search?title=AnyTitle<p>
+     * To search event, the following parameters are required:
+     *
+     * @param title {@link EventDTO}
+     * @return {@link HttpStatus} and list of like title Events
+     */
+    @GetMapping("/events/title-search")
+    public ResponseEntity<?> getEventsLikeTitle(@RequestParam String title) {
+        List<EventDTO> eventLikeTitle = eventService.findEventLikeTitle(title);
+        return new ResponseEntity<>(eventLikeTitle, HttpStatus.OK);
+    }
+
+    /**
+     * <h2>Getting a list of events (sorting by event type)</h2>
+     * To sorting by event type, the following parameters are required:
+     *
+     * @param eventType title of {@link EventType}
+     * @return {@link HttpStatus} and sorting list of {@link EventDTO}
+     */
+    @GetMapping("/events/type-search")
+    public ResponseEntity<?> getEventsByEventsType(@RequestParam String eventType) {
+        List<EventDTO> eventByEventType = eventService.findEventByEventType(eventType);
+        return new ResponseEntity<>(eventByEventType, HttpStatus.OK);
+    }
+
+    /**
+     * <h2>Create new event</h2>
+     * Save new event to database
+     * To create a new event, the following parameters are required:
+     *
+     * @param newEvent {@link EventDTO} (ID not need)
+     * @return {@link EventDTO} and {@link HttpStatus}
+     */
+    @PostMapping("/events")
+    public ResponseEntity<?> createNewEvent(@RequestBody EventDTO newEvent) {
+        eventService.createNewEvent(newEvent);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    /**
+     * <h2>Update events or change activity</h2>
+     * For change activity of event you should set active field to false <p>
+     * To update/change activity event, the following parameters are required:
+     *
+     * @param updateEvent {@link EventDTO}
+     * @return {@link HttpStatus}
+     */
+    @PutMapping("/events")
+    public ResponseEntity<?> updateEvents(@RequestBody EventDTO updateEvent) {
+        eventService.updateEvent(updateEvent);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

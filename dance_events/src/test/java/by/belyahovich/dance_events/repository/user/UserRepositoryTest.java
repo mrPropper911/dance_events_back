@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -14,7 +15,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("User repository module test")
+
+@DisplayName("UserRepository unit-test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserRepositoryTest {
@@ -52,12 +54,11 @@ class UserRepositoryTest {
     @Test
     public void findUserById_withExistingUser_shouldProperlyFindUser() {
         //given
-        User newUser = createNewUser();
-        User expectedUserInDb = userRepository.save(newUser);
+        Long EXPECTED_USER_ID = 2L;
         //when
-        Optional<User> actualUserFromDB = userRepository.findById(expectedUserInDb.getId());
+        User ACTUAL_USER = userRepository.findById(EXPECTED_USER_ID).orElseThrow();
         //then
-        assertThat(actualUserFromDB).isPresent();
+        assertThat(ACTUAL_USER.getId()).isEqualTo(EXPECTED_USER_ID);
     }
 
     @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
@@ -122,14 +123,32 @@ class UserRepositoryTest {
     @Test
     public void findAllLikedUserEventsByLogin_withExistingUser_shouldProperlyFindAllUserLikedEvents() {
         //given
+        Long USER_ID_FOR_UPDATE = 3L;
         String USER_LOGIN_FOR_UPDATE = "igor88";
         int EXPECTED_COUNT_OF_EVENT = 2;
         Optional<User> userForSearching = userRepositoryJpa.findUserByLogin(USER_LOGIN_FOR_UPDATE);
         assertThat(userForSearching).isPresent();
         //when
-        List<Event> actualUserEvents = userRepositoryJpa.getAllLikedUserEventsByUserLogin(USER_LOGIN_FOR_UPDATE);
+        List<Event> actualUserEvents = userRepositoryJpa.getAllLikedUserEventsByUserId(USER_ID_FOR_UPDATE);
         //then
         assertThat(actualUserEvents).hasSize(EXPECTED_COUNT_OF_EVENT);
+    }
+
+    @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
+    @Test
+    @Rollback(value = false)
+    public void updateUserActive_withExistingUser_shouldProperlyUpdateUserActive() {
+        //given
+        String USER_LOGIN_FOR_UPDATE = "sergey13";
+        Optional<User> userByLogin = userRepositoryJpa.findUserByLogin(USER_LOGIN_FOR_UPDATE);
+        assertThat(userByLogin).isPresent();
+        assertThat(userByLogin.get().isActive()).isFalse();
+        //when
+        userRepositoryJpa.updateUserActive(USER_LOGIN_FOR_UPDATE, true);
+        Optional<User> actualByLogin = userRepositoryJpa.findUserByLogin(USER_LOGIN_FOR_UPDATE);
+        //then
+        assertThat(actualByLogin).isPresent();
+        assertThat(actualByLogin.get().isActive()).isTrue();
     }
 
     private User createNewUser() {

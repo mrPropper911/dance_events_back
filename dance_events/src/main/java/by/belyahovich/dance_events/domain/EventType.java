@@ -22,39 +22,11 @@ public class EventType {
     @Column(name = "type")
     private String type;
 
-    @OneToMany(targetEntity = Event.class, mappedBy = "eventType", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "eventType")
     private Set<Event> eventsByType;
 
-    public EventType(String type) {
+    public EventType(long id, String type) {
+        this.id = id;
         this.type = type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        EventType eventType = (EventType) o;
-
-        if (id != eventType.id) return false;
-        if (!Objects.equals(type, eventType.type)) return false;
-        return Objects.equals(eventsByType, eventType.eventsByType);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (eventsByType != null ? eventsByType.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "EventType{" +
-                "id=" + id +
-                ", type='" + type + '\'' +
-                ", eventsByType=" + eventsByType +
-                '}';
     }
 }

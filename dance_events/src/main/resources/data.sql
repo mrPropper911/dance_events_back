@@ -25,8 +25,9 @@ VALUES  ('Urban'),
 INSERT INTO users(login, password, active, role_id)
 VALUES  ('vadik05', '$2y$10$4HBKgn/t6Un7SgEd6UOF4.sT0qNBTeWAwPEeHCSOlvD2tNRFVlU9G', 1, 1),
         ('veronika44', '$2y$10$ybyXjlkHB5/VFXG1zIGwCe5KXwNKQjvRyHfK0JzlGxP7MIOOtsFna', 1, 2),
-        ('igor88', '$2y$10$4HBKgn/t6Un7SgEd6UOF4.sT0qNBTeWAwPEeHCSOlvD2tNRFVlU9G', 1, 3),
-        ('sergey13', '$2y$10$4HBKgn/t6Un7SgEd6UOF4.sT0qNBTeWAwPEeHCSOlvD2tNRFVlU9G', 0, 3);
+        ('user123', '$2a$10$4RCA6v9iVByB3C0.EGDBfOR64WqxSfLiin/m4z8Oqlr5nIaUpmnhi', 1, 2),
+        ('sergey13', '$2y$10$4HBKgn/t6Un7SgEd6UOF4.sT0qNBTeWAwPEeHCSOlvD2tNRFVlU9G', 0, 3),
+        ('lovanda', '$2a$10$xVejl2R42O/ACWSnQNDU1ec0fx4MTgfMGcx.PTaMca58uarJx8xAi', 1, 3);
 
 INSERT INTO users_info(id, name, surname, phone, email)
 VALUES (1, 'Vadia', 'Belynovcki', '+375331231232', 'vadia123bel@gmail'),

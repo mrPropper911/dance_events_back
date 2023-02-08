@@ -2,10 +2,13 @@ package by.belyahovich.dance_events.service.userinfo;
 
 import by.belyahovich.dance_events.domain.User;
 import by.belyahovich.dance_events.domain.UserInfo;
+import by.belyahovich.dance_events.dto.UserInfoDTO;
 
 public interface UserInfoService {
 
-    UserInfo createUserInfo (User user, UserInfo userInfo);
+    void saveUserInfo (Long userId, UserInfoDTO userInfoDTO);
 
-    void deleteUserInfo (User user, UserInfo userInfo);
+    void deleteUserInfo (UserInfo userInfo);
+
+    UserInfoDTO findUserInfoByUserId (Long userId);
 }

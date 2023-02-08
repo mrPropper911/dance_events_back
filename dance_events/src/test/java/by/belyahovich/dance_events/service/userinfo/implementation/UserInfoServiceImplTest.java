@@ -1,9 +1,12 @@
 package by.belyahovich.dance_events.service.userinfo.implementation;
 
 import by.belyahovich.dance_events.config.ResourceNotFoundException;
+import by.belyahovich.dance_events.domain.Role;
 import by.belyahovich.dance_events.domain.User;
 import by.belyahovich.dance_events.domain.UserInfo;
-import by.belyahovich.dance_events.repository.user.UserRepositoryJpa;
+import by.belyahovich.dance_events.dto.UserInfoDTO;
+import by.belyahovich.dance_events.dto.UserInfoDTOMapper;
+import by.belyahovich.dance_events.repository.user.UserRepository;
 import by.belyahovich.dance_events.repository.userinfo.UserInfoRepository;
 import by.belyahovich.dance_events.service.userinfo.UserInfoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,75 +18,147 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@DisplayName("UserInfo service unit-testing")
+@DisplayName("UserInfoService unit-test")
 class UserInfoServiceImplTest {
-    private static final String EXIST_USER_1_LOGIN = "Vadim";
-    private static final String EXIST_USER_1_PASSWORD = "$2y$10$4HBKgn/t6Un7SgEd6UOF4.sT0qNBTeWAwPEeHCSOlvD2tNRFVlU9G";
-    private static final Long SOME_RANDOM_NUMBER = 1L;
-    protected User user_1 = new User();
-    protected UserInfo userInfo_1 = new UserInfo();
+
     private UserInfoService userInfoService;
+
     private UserInfoRepository userInfoRepository;
-    private UserRepositoryJpa userRepositoryJpa;
+    private UserRepository userRepository;
+    private UserInfoDTOMapper userInfoDTOMapper;
 
     @BeforeEach
     public void init() {
         userInfoRepository = Mockito.mock(UserInfoRepository.class);
-        userRepositoryJpa = Mockito.mock(UserRepositoryJpa.class);
-        userInfoService = new UserInfoServiceImpl(userInfoRepository, userRepositoryJpa);
-
-        user_1.setId(SOME_RANDOM_NUMBER);
-        user_1.setLogin(EXIST_USER_1_LOGIN);
-        user_1.setPassword(EXIST_USER_1_PASSWORD);
-        user_1.setActive(true);
-
-        userInfo_1.setUser(user_1);
-        userInfo_1.setName("SOME_NAME");
-        userInfo_1.setSurname("SOME_SURNAME");
+        userRepository = Mockito.mock(UserRepository.class);
+        userInfoDTOMapper = Mockito.mock(UserInfoDTOMapper.class);
+        userInfoService = new UserInfoServiceImpl(
+                userInfoRepository,
+                userInfoDTOMapper,
+                userRepository
+        );
     }
 
     @Test
-    public void createUserInfo_withExistingUser_shouldProperlyCreateUserInformation() {
+    public void saveUserInfo_withNotExistingUser_shouldThrowException() {
+        //given
+        Optional<User> NOT_EXISTING_USER = Optional.empty();
+        UserInfoDTO userInfoDTO = new UserInfoDTO(
+                1L,
+                "SOME_NAME",
+                "SOME_SURNAME",
+                "SOME_PHONE",
+                "SOME_EMAIL");
         //when
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
-        when(userInfoRepository.save(userInfo_1)).thenReturn(userInfo_1);
-        //then
-        UserInfo actualUserInformation = userInfoService.createUserInfo(user_1, userInfo_1);
-        assertThat(actualUserInformation).isNotNull();
-        assertThat(actualUserInformation).isEqualTo(userInfo_1);
-        verify(userInfoRepository, times(1)).save(userInfo_1);
-    }
-
-    @Test
-    public void createUserInfo_withNotExistingUser_shouldThrowException() {
-        //when
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findById(anyLong())).thenReturn(NOT_EXISTING_USER);
         //then
         assertThrows(ResourceNotFoundException.class,
-                () -> userInfoService.createUserInfo(user_1, userInfo_1));
+                () -> userInfoService.saveUserInfo(1L, userInfoDTO));
+    }
+
+    @Test
+    public void saveUserInfo_withNotEqualsUserIdAndUserInfoId_shouldThrowException() {
+        //given
+        UserInfoDTO userInfoDTO = new UserInfoDTO(
+                1L,
+                "SOME_NAME",
+                "SOME_SURNAME",
+                "SOME_PHONE",
+                "SOME_EMAIL");
+        //then
+        assertThrows(IllegalArgumentException.class,
+                () -> userInfoService.saveUserInfo(2L, userInfoDTO));
+    }
+
+    @Test
+    public void saveUserInfo_withExistingUser_shouldProperlySaveUserInformation() {
+        //given
+        User EXISTING_USER = new User(
+                1L,
+                "SOME_LOGIN",
+                "SOME_PASSWORD",
+                true,
+                new Role(1L, "ROLE_EXAMPLE")
+        );
+        Optional<User> OPTIONAL_EXISTING_USER = Optional.of(EXISTING_USER);
+        UserInfoDTO userInfoDTO = new UserInfoDTO(
+                1L,
+                "SOME_NAME",
+                "SOME_SURNAME",
+                "SOME_PHONE",
+                "SOME_EMAIL");
+        //when
+        when(userRepository.findById(anyLong())).thenReturn(OPTIONAL_EXISTING_USER);
+        userInfoService.saveUserInfo(EXISTING_USER.getId(), userInfoDTO);
+        //then
+        verify(userInfoRepository, times(1))
+                .save(userInfoDTOMapper.toUserInfo(userInfoDTO));
+    }
+
+    @Test
+    public void findUserInfoByUserId_withExistingUser_shouldProperlyFindUserInfo() {
+        //given
+        UserInfo EXISTING_USER_INFO = new UserInfo(
+                1L,
+                "SOME_NAME",
+                "SOME_SURNAME",
+                "SOME_PHONE",
+                "SOME_EMAIL"
+        );
+        Optional<UserInfo> OPTIONAL_EXISTING_USER_INFO =
+                Optional.of(EXISTING_USER_INFO);
+        UserInfoDTO EXPECTED_USER_INFO_DTO = new UserInfoDTO(
+                1L,
+                "SOME_NAME",
+                "SOME_SURNAME",
+                "SOME_PHONE",
+                "SOME_EMAIL"
+        );
+        //when
+        when(userInfoRepository.findById(anyLong())).thenReturn(OPTIONAL_EXISTING_USER_INFO);
+        when(userInfoDTOMapper.apply(any(UserInfo.class))).thenReturn(EXPECTED_USER_INFO_DTO);
+        UserInfoDTO ACTUAL_USER_INFO_DTO = userInfoService.findUserInfoByUserId(1L);
+        //then
+        assertThat(ACTUAL_USER_INFO_DTO).isNotNull();
+        assertThat(ACTUAL_USER_INFO_DTO).isEqualTo(EXPECTED_USER_INFO_DTO);
     }
 
     @Test
     public void deleteUserInfo_withExistingUser_shouldProperlyDeleteUserInformation() {
+        //given
+        UserInfo EXISTING_USER_INFO = new UserInfo(
+                1L,
+                "SOME_NAME",
+                "SOME_SURNAME",
+                "SOME_PHONE",
+                "SOME_EMAIL"
+        );
+        Optional<UserInfo> OPTIONAL_EXISTING_USER_INFO =
+                Optional.of(EXISTING_USER_INFO);
         //when
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.of(user_1));
-        when(userInfoRepository.findById(anyLong())).thenReturn(Optional.of(userInfo_1));
+        when(userInfoRepository.findById(anyLong())).thenReturn(OPTIONAL_EXISTING_USER_INFO);
+        userInfoService.deleteUserInfo(EXISTING_USER_INFO);
         //then
-        userInfoService.deleteUserInfo(user_1, userInfo_1);
-        verify(userInfoRepository, times(1)).deleteById(userInfo_1.getId());
+        verify(userInfoRepository, times(1)).deleteById(1L);
     }
 
     @Test
     public void deleteUserInfo_withNotExistingUser_shouldThrowException() {
+        //given
+        UserInfo EXISTING_USER_INFO = new UserInfo(
+                1L,
+                "SOME_NAME",
+                "SOME_SURNAME",
+                "SOME_PHONE",
+                "SOME_EMAIL"
+        );
+        Optional<UserInfo> NOT_EXISTING_USER_INFO = Optional.empty();
         //when
-        when(userRepositoryJpa.findUserByLogin(anyString())).thenReturn(Optional.empty());
+        when(userInfoRepository.findById(anyLong())).thenReturn(NOT_EXISTING_USER_INFO);
         //then
         assertThrows(ResourceNotFoundException.class,
-                () -> userInfoService.deleteUserInfo(user_1, userInfo_1));
-
-        verify(userInfoRepository, times(0)).deleteById(userInfo_1.getId());
+                () -> userInfoService.deleteUserInfo(EXISTING_USER_INFO));
     }
 }

@@ -29,8 +29,7 @@ public class RegistrationController {
     public RegistrationController(
             UserService userService,
             RoleService roleService,
-            JwtProvider jwtProvider)
-    {
+            JwtProvider jwtProvider) {
         this.userService = userService;
         this.roleService = roleService;
         this.jwtProvider = jwtProvider;

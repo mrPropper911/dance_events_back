@@ -50,17 +50,14 @@ public class UserController {
      * @return {@link HttpStatus}
      */
     @PostMapping("/users/{userId}")
-    public ResponseEntity<?> updateUserInfoByUserId(@RequestBody UserInfoDTO userInfoDTO, @PathVariable Long userId) {
+    public ResponseEntity<?> updateUserInfoByUserId(@RequestBody UserInfoDTO userInfoDTO,
+                                                    @PathVariable Long userId) {
         userInfoService.saveUserInfo(userId, userInfoDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * <h2>Update user activity (change the active flag)</h2>
-     * Example request in postman:<p>
-     * - URL: localhost:8080/users/2?active=1<p>
-     * - Params: active 1<p>
-     * - Body: raw(JSON) true/false<p>
      * To change activity, the following parameters are required:
      *
      * @param active {@link User} (false - is not active)
@@ -68,7 +65,8 @@ public class UserController {
      * @return {@link HttpStatus}
      */
     @PutMapping("/users/{userId}")
-    public ResponseEntity<?> updateUserActive(@RequestBody boolean active, @PathVariable Long userId) {
+    public ResponseEntity<?> updateUserActive(@RequestParam boolean active,
+                                              @PathVariable Long userId) {
         userService.updateUserActive(userId, active);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -95,7 +93,8 @@ public class UserController {
      * @return {@link HttpStatus}
      */
     @PostMapping("/users/{userId}/liked/{eventId}")
-    public ResponseEntity<?> addLikeEventToUser(@PathVariable Long userId, @PathVariable Long eventId) {
+    public ResponseEntity<?> addLikeEventToUser(@PathVariable Long userId,
+                                                @PathVariable Long eventId) {
         userService.addLikeEventToUser(userId, eventId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -109,7 +108,8 @@ public class UserController {
      * @return {@link HttpStatus}
      */
     @DeleteMapping("/users/{userId}/liked/{eventId}")
-    public ResponseEntity<?> deleteLikeEventFromUser(@PathVariable Long userId, @PathVariable Long eventId) {
+    public ResponseEntity<?> deleteLikeEventFromUser(@PathVariable Long userId,
+                                                     @PathVariable Long eventId) {
         userService.deleteLikedEvent(userId, eventId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

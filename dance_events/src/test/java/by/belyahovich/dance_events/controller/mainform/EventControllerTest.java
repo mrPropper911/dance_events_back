@@ -145,6 +145,4 @@ class EventControllerTest {
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
-
-
 }

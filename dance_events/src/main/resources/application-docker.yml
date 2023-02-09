@@ -5,8 +5,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://db:3306/dancer
-    username: root
-    password: root
+    username:
+    password:
   jpa:
     database-platform: org.hibernate.dialect.MySQL5Dialect
     generate-ddl: false

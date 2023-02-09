@@ -4,7 +4,7 @@
 mvn -f dance_events/ clean package -DskipTests
 
 # Ensure, that docker-compose stopped
-docker-compose down
+docker-compose down -v
 
 # Start new deployment
 docker-compose up --build -d

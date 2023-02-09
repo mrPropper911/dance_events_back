@@ -24,3 +24,7 @@ spring:
   sql:
     init:
       mode: always
+
+#tiken lifetime is = current data + token lifetime (min)
+tokenLifetime: 30
+tokenSecret: testSpringSecret

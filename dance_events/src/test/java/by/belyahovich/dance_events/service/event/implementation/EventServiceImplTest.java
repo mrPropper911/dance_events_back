@@ -14,7 +14,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -353,13 +356,36 @@ class EventServiceImplTest {
                 "EV_TYPE",
                 true
         );
+        List<Event> eventList = List.of(event_1);
+        Page<Event> page = new PageImpl<>(eventList);
         //when
-        when(eventRepositoryJpa.findAllByOrderByStartDateAsc()).thenReturn(List.of(event_1));
+        when(eventRepositoryJpa.findAllByOrderByStartDateAsc(any())).thenReturn(page);
         when(eventDTOMapper.apply(any())).thenReturn(eventDTO);
-        List<EventDTO> actualAllEventsSortedByStartDate = eventService.findAllEventsSortedByStartDate();
+        List<EventDTO> actualAllEventsSortedByStartDate = eventService.findAllEventsSortedByStartDate(0, 1);
         //then
         assertThat(actualAllEventsSortedByStartDate).isNotEmpty();
         assertThat(actualAllEventsSortedByStartDate).hasSize(1);
     }
 
+    @Test
+    public void findAllEventsSortedByStartDate_withNotExistingPage_shouldProperlyReturnEmptyList() {
+        //given
+        EventDTO eventDTO = new EventDTO(
+                1L,
+                "Title",
+                "Description",
+                new Date(System.currentTimeMillis() + 10_000),
+                new Date(System.currentTimeMillis() + 90_000),
+                "EV_TYPE",
+                true
+        );
+        List<Event> eventList = new ArrayList<>();
+        Page<Event> page = new PageImpl<>(eventList);
+        //when
+        when(eventRepositoryJpa.findAllByOrderByStartDateAsc(any())).thenReturn(page);
+        when(eventDTOMapper.apply(any())).thenReturn(eventDTO);
+        List<EventDTO> actualAllEventsSortedByStartDate = eventService.findAllEventsSortedByStartDate(52, 13);
+        //then
+        assertThat(actualAllEventsSortedByStartDate).isEmpty();
+    }
 }

@@ -9,8 +9,12 @@ import by.belyahovich.dance_events.repository.event.EventRepository;
 import by.belyahovich.dance_events.repository.event.EventRepositoryJpa;
 import by.belyahovich.dance_events.service.event.EventService;
 import by.belyahovich.dance_events.service.eventtype.EventTypeService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -112,10 +116,17 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventDTO> findAllEventsSortedByStartDate() {
-        return eventRepositoryJpa.findAllByOrderByStartDateAsc()
-                .stream()
-                .map(eventDTOMapper)
-                .collect(Collectors.toList());
+    public List<EventDTO> findAllEventsSortedByStartDate(Integer pageNo, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<Event> eventPage = eventRepositoryJpa.findAllByOrderByStartDateAsc(pageable);
+        if (eventPage.hasContent()){
+            return eventPage
+                    .getContent()
+                    .stream()
+                    .map(eventDTOMapper)
+                    .collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
     }
 }

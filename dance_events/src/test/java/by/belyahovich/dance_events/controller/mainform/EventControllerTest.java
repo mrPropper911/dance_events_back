@@ -43,8 +43,8 @@ class EventControllerTest {
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<EventDTO> actualEvents = response.getBody();
-        assertThat(actualEvents).hasSize(4);
-        assertThat(actualEvents.get(2).title()).isEqualTo("MINSK-666");
+        assertThat(actualEvents).hasSize(2);
+        assertThat(actualEvents.get(1).title()).isEqualTo("Berestie-XOX");
     }
 
     @Test

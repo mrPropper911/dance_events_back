@@ -20,5 +20,5 @@ public interface EventService {
 
     void updateEvent (EventDTO eventDTO);
 
-    List<EventDTO> findAllEventsSortedByStartDate ();
+    List<EventDTO> findAllEventsSortedByStartDate (Integer pageNo, Integer pageSize);
 }

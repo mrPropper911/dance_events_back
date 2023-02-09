@@ -3,6 +3,17 @@
 This application is written using software architecture REST API and has the following advantages: 
 scalability, flexibility and independence.
 
+### Technological stack
+    - Java 16
+    - Spring Boot as a skeleton framework
+    - Spring Data
+    - Spring Security + JWT
+    - MySQL database as a database
+    - Flyway database migration tool
+    - phpMyAdmin administration tool for MySQL
+    - Junit5 + AssertJ for testing
+    - Docker
+
 ### Application.yml profiles
     To change the application execution profile
     - test (for local development)
@@ -23,16 +34,6 @@ scalability, flexibility and independence.
 ### Help command for console in docker image MySQL:
     - mysql -uroot -p <database_name> (enter into database)
 
-### Technological stack
-    - Java 16
-    - Spring Boot as a skeleton framework
-    - Spring Data
-    - Spring Security + JWT
-    - MySQL database as a database
-    - Flyway database migration tool
-    - phpMyAdmin administration tool for MySQL
-    - Junit5 + AssertJ for testing
-    - Docker
 
 ### License
     

@@ -3,4 +3,4 @@
 # - docker (build for docker image)
 spring:
   profiles:
-    active: docker
+    active: test

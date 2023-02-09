@@ -21,13 +21,19 @@ public class EventController {
     }
 
     /**
-     * <h2>Getting a list of all events (sorted by date)</h2>
+     * <h2>Getting a list of all events (sorted by date) and Pageable</h2>
+     * Example request:<p>
+     * - localhost:8080/events (by default first(0)page two entity on page)<p>
+     * - localhost:8080/events?pageSize=5<p>
+     * - localhost:8080/events?pageSize=1&pageNo=1<p>
      *
      * @return list of {@link EventDTO} and {@link HttpStatus}
      */
     @GetMapping("/events")
-    public ResponseEntity<?> getAllEventsSortedByStartDate() {
-        List<EventDTO> allEvents = eventService.findAllEventsSortedByStartDate();
+    public ResponseEntity<?> getAllEventsSortedByStartDate(
+            @RequestParam(defaultValue = "0") Integer pageNo,
+            @RequestParam(defaultValue = "2") Integer pageSize) {
+        List<EventDTO> allEvents = eventService.findAllEventsSortedByStartDate(pageNo, pageSize);
         return new ResponseEntity<>(allEvents, HttpStatus.OK);
     }
 

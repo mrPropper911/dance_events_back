@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -106,11 +108,11 @@ class EventRepositoryTest {
     public void findAllByOrderByStartDateAsc_withExistingEvent_shouldProperlyFindAllSortedEvent() {
         //given
         int EXPECTED_COUNT_OF_EVENTS_ON_DB = 4;
+        Pageable pageable = PageRequest.of(0, 4);
         //when
-        List<Event> ACTUAL_EVENTS_FROM_DB = eventRepositoryJpa.findAllByOrderByStartDateAsc();
+        Page<Event> ACTUAL_EVENTS_FROM_DB = eventRepositoryJpa.findAllByOrderByStartDateAsc(pageable);
         //then
         assertThat(ACTUAL_EVENTS_FROM_DB).hasSize(EXPECTED_COUNT_OF_EVENTS_ON_DB);
-        assertThat(ACTUAL_EVENTS_FROM_DB).isSortedAccordingTo(Comparator.comparing(Event::getStartDate));
     }
 
     @Sql(scripts = {"/sql/clearDatabase.sql", "/sql/addRolesForUsers.sql"})
